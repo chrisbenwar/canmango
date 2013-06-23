@@ -1,11 +1,11 @@
 'use strict';
+var canmango = canmango || {};
 
-/* Controllers */
-
-angular.module('myApp.controllers', []).
-  controller('MyCtrl1', [function() {
-
-  }])
-  .controller('MyCtrl2', [function() {
-
-  }]);
+(function(cm) {
+	angular.module('canmango.controllers', []).
+		controller('HomeCtrl', function($scope) {
+			var drawer = canmango.roundDude;
+			canmango.shapespasm.setDrawer(drawer);
+			$scope.$on('$viewContentLoaded', canmango.shapespasm.init);
+  });
+})(canmango);
