@@ -14,11 +14,22 @@ body, html {
 }
 
 .content {
-	width: 880px;
+	width: 820px;
 	padding: 10px;
 	margin: auto;
 	background-color: #eee;
 	text-align: center;
+	overflow: hidden;
+}
+
+.canvasControls {
+	float: left;
+	width: 300px;
+}
+
+.canvasDisplay {
+	float: right;
+	width: 500px;	
 }
 
 .content h3 {

@@ -2,6 +2,44 @@
 <p>
 	<span class="desc">&#8220; Create simple characers out of round shapes. &#8221;</span>
 </p>
-<canvas id="canmangoCanvas" class="canmangoCanvas" width="800" height="600">
-	Sorry, This kind of magic doesn't work on your browser.
-</canvas>
+<div class="canvasApp">
+	<div class="canvasControls">
+		<select ng-model="selectedItem" ng-options="item as item.desc for item in displayData">
+		</select>
+		<table width="100%">
+			<tr>
+				<td>Shape</td>
+				<td>
+					<input ng-model="selectedItem.shape" ng-change="update()" />
+				</td>
+			</tr>
+			<tr>
+				<td>Fill colour</td>
+				<td>
+					<input ng-model="selectedItem.colour1" ng-change="update()" />
+				</td>
+			</tr>
+			<tr>
+				<td>Stroke colour</td>
+				<td>
+					<input ng-model="selectedItem.colour2" ng-change="update()" />
+			</td>
+			<tr>
+				<td>Width</td>
+				<td>
+					<input ng-model="selectedItem.w" ng-change="update()" />
+			</td>
+			<tr>
+				<td>Height</td>
+				<td>
+					<input ng-model="selectedItem.h" ng-change="update()" />
+			</td>
+		</tr>
+		</table>
+	</div>
+	<div class="canvasDisplay">
+		<canvas id="canmangoCanvas" class="canmangoCanvas" width="400" height="400">
+			Sorry, This kind of magic doesn't work on your browser.
+		</canvas>
+	</div>
+</div>
