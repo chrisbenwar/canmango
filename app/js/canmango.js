@@ -52,7 +52,7 @@ var canmango = canmango || {};
 				"head": { "w": 1, "h": 1, "colour1": "brown", "colour2": "black", "shape": "square" },
 				"eye": { "w": 0.1, "h": 0.2, "colour1": "red", "colour2": "black" },
 				"pupil": { "w": 0.1, "h": 0.1, "colour1": "black", "colour2": "white", "shape": "square" },
-				"mouth": { "w": 0.1, "h": 0.4, "colour1": "white", "colour2": "pink", "shape": "square" },
+				"mouth": { "w": 0.1, "h": 0.1, "colour1": "white", "colour2": "black", "shape": "square" },
 				"foot": { "w": 0.4, "h": 0.2, "colour1": "brown", "colour2": "black", "shape": "circle" },
 			},
 			"parts": {
