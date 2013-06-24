@@ -49,11 +49,11 @@ var canmango = canmango || {};
 	cm.roundDude = {
 		"dude": {
 			"atoms": {
-				"head": { "w": 1, "h": 1, "colour1": "brown", "colour2": "black", "shape": "square" },
-				"eye": { "w": 0.1, "h": 0.2, "colour1": "red", "colour2": "black" },
-				"pupil": { "w": 0.1, "h": 0.1, "colour1": "black", "colour2": "white", "shape": "square" },
-				"mouth": { "w": 0.1, "h": 0.1, "colour1": "white", "colour2": "black", "shape": "square" },
-				"foot": { "w": 0.4, "h": 0.2, "colour1": "brown", "colour2": "black", "shape": "circle" },
+				"head": { "w": 1, "h": 1, "colour1": "#990000", "colour2": "#000000", "shape": "circle" },
+				"eye": { "w": 0.1, "h": 0.2, "colour1": "#ff0000", "colour2": "#000000" },
+				"pupil": { "w": 0.1, "h": 0.1, "colour1": "#000000", "colour2": "#ffffff", "shape": "circle" },
+				"mouth": { "w": 0.1, "h": 0.1, "colour1": "#ffffff", "colour2": "#000000", "shape": "circle" },
+				"foot": { "w": 0.4, "h": 0.2, "colour1": "#990000", "colour2": "#000000", "shape": "circle" },
 			},
 			"parts": {
 				"dude": {"x": 0, "y": 0, "abs": 1},

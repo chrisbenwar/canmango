@@ -1,12 +1,18 @@
-<h3>Shapespasm</h3>
+<h3>Shape Shifters</h3>
 <p>
-	<span class="desc">&#8220; Experiments with HTML5 Canvas &#8221;</span>
+	<span class="desc">&#8220; Build characters out of different shapes. &#8221;</span>
 </p>
 <div class="canvasApp">
 	<div class="canvasControls">
 		<select ng-model="selectedItem" ng-options="item as item.desc for item in displayData">
 		</select>
 		<table width="100%">
+			<tr>
+				<td>Shape</td>
+				<td>
+					<input ng-model="selectedItem.shape" ng-change="update()" />
+				</td>
+			</tr>
 			<tr>
 				<td>Fill colour</td>
 				<td>
@@ -37,3 +43,4 @@
 		</canvas>
 	</div>
 </div>
+
