@@ -2,9 +2,10 @@
 var canmango = canmango || {};
 
 (function(cm) {
-	angular.module('canmango.controllers', []).
+	var canmangoControllers = angular.module('canmango.controllers', []);
 	
-		controller('HomeCtrl', function($scope) {
+	
+	canmangoControllers.controller('HomeCtrl', function($scope) {
 
 			var drawer = cm.roundDude;
 			cm.shapespasm.setDrawer(drawer);
@@ -19,4 +20,8 @@ var canmango = canmango || {};
 				cm.roundDude.update($scope.selectedItem);
 			}
   });
+
+	canmangoControllers.controller('ShapinSafariCtrl', function($scope) {
+			$scope.$on('$viewContentLoaded', canmango.shapinSafari.draw());
+	});
 })(canmango);
