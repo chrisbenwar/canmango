@@ -7,14 +7,15 @@ var canmango = canmango || {};
 		_ui: null,
 
 		draw: function() {
+
 			var ui = cm.shaperUI;
-			ui.init();
+			ui.init('canmangoCanvasOverlay');
 			ui.createHandle('drag1', {
 				handler: function() {},
 				pos: [100, 100]
 			});
 
-			var canvas = document.getElementById('canmangoCanvas');
+			var canvas = document.getElementById('canmangoCanvasUnderlay');
 			var editor = editor2d(canvas);
 
 			var design = {

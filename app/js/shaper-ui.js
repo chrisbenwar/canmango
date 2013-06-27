@@ -24,8 +24,8 @@ var canmango = canmango || {};
 		 */
 		_handles: {},
 		
-		init: function() {
-			my._stage = new createjs.Stage("canmangoCanvas");
+		init: function(canvasID) {
+			my._stage = new createjs.Stage(canvasID);
 			my._width = my._stage.canvas.width;
 			my._height = my._stage.canvas.height;
 		},
@@ -51,11 +51,13 @@ var canmango = canmango || {};
 		{
 			var g = my.drawHandle('blue', 'green');
 
+			var pressHandler = properties.pressHandler || my.pressHandler;
+
 			var shape = new createjs.Shape(g);
 			shape.id = 'pos';
 			shape.x = properties.pos[0];
 			shape.y = properties.pos[1];
-			shape.onPress = properties.pressHandler;
+			shape.onPress = pressHandler;
 			my._handles[id] = shape;
 			my._stage.addChild(shape);
 			my._stage.update();
@@ -74,6 +76,14 @@ var canmango = canmango || {};
 			g.drawCircle(0,0,10);
 			return g;
 		}, 
+
+		pressHandler: function(e){
+			e.onMouseMove = function(ev){
+				e.target.x = ev.stageX;
+				e.target.y = ev.stageY;
+				my._stage.update();
+			 }
+		}
 	}
 
 	var my = cm.shaperUI;
