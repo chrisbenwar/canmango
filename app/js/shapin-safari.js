@@ -5,67 +5,146 @@ var canmango = canmango || {};
 	cm.shapinSafari = {
 		_canvas: null,
 		_ui: null,
+		_editor: null,
+		_defaultDesign: {
+			elems: [
+				{
+					id: 'rect',
+					points: [
+						{ x: 0.2, y: 0.2, curve: 0.0 },
+						{ x: 0.4, y: 0.2, curve: 0.0  },
+						{ x: 0.4, y: 0.4, curve: 0.0  },
+						{ x: 0.2, y: 0.4, curve: 0.0  }, 
+					],
+					fillStyle: '#ee2',
+					strokeStyle: '#b00',
+					lineWidth: 0.05
+				}
+			]
+		},
+
+		updateHandles: function(shapeID, ignoreID)
+		{
+			var shapes = my._editor.getShapes();
+			var shape = shapes[shapeID];
+			shape.scale(my._canvas.width, my._canvas.height);
+			var numPoints = shape.numPoints();
+
+			for(var i = 0; i < numPoints; i++) 
+			{
+				var point = shape.getPoint(i);
+				var curve = shape.getCurve(i);
+
+				var handleID = shapeID + '-' + i;
+
+				if(handleID != ignoreID)
+				{
+					var curveHandleID = handleID + '-curve';
+
+					my._ui.moveHandle(handleID, point.x, point.y);
+
+					if(curve)
+					{
+						my._ui.moveHandle(curveHandleID, curve.x, curve.y);
+					}
+				}
+			}
+		},
+
+		init: function(design) 
+		{
+			my._design = design || my._defaultDesign;
+
+			my._canvas = document.getElementById('canmangoCanvasUnderlay');
+			my._editor = editor2d(my._canvas);
+			my._editor.loadDesign(my._design);
+
+			my._ui = cm.shaperUI;
+			my._ui.init('canmangoCanvasOverlay');
+
+			var shapes = my._editor.getShapes();
+			var shape = shapes['rect'];
+			shape.scale(my._canvas.width, my._canvas.height);
+			var numPoints = shape.numPoints();
+
+			for(var i = 0; i < numPoints; i++) 
+			{
+				var point = shape.getPoint(i);
+				var curve = shape.getCurve(i);
+
+				var handleID = 'rect-' + i;
+
+				my._ui.createHandle('rect-' + i, {
+					moveHandler: function(e) {
+						var x = e.target.x;
+						var y = e.target.y;
+						var handleID = e.target.name;
+
+						var idParts = handleID.split('-');
+						var shapeID = idParts[0];
+						var index = idParts[1];
+
+						var shapes = my._editor.getShapes();
+						var shape = shapes[shapeID];
+						
+						shape.setPoint(index, x, y);
+						my.draw();
+
+						var curve = shape.getCurve(index);
+
+						my.updateHandles('rect', 'rect-' + i);
+					},
+					pos: [point.x, point.y]
+				});
+
+				if(curve)
+				{
+					var curveID = handleID + '-curve';
+
+					my._ui.createHandle(curveID, {
+						moveHandler: function(e) {
+							var x = e.target.x;
+							var y = e.target.y;
+							var handleID = e.target.name;
+
+							var idParts = handleID.split('-');
+							var shapeID = idParts[0];
+							var index = idParts[1];
+
+							var shapes = my._editor.getShapes();
+							var shape = shapes[shapeID];
+
+							shape.setCurve(index, x, y);
+							my.draw(); 
+
+							my.updateHandles('rect');
+						},
+						pos: [curve.x, curve.y],
+						fillColour: '#ffffaa'
+					});
+
+					var prevHandleIndex = i - 1;
+					if(prevHandleIndex < 0) prevHandleIndex = numPoints - 1;
+					var prevHandleID = 'rect-' + prevHandleIndex;
+
+					my._ui.createGuide({
+						'fromID': curveID, 'toID': handleID, 'strokeColour': '#dddddd'
+					});
+
+					my._ui.createGuide({
+						'fromID': curveID, 'toID': prevHandleID, 'strokeColour': '#dddddd'
+					});
+				}
+			}
+
+			my.draw();
+		},
 
 		draw: function() {
-
-			var ui = cm.shaperUI;
-			ui.init('canmangoCanvasOverlay');
-			ui.createHandle('drag1', {
-				handler: function() {},
-				pos: [100, 100]
-			});
-
-			var canvas = document.getElementById('canmangoCanvasUnderlay');
-			var editor = editor2d(canvas);
-
-			var design = {
-				elems: [
-					{
-						id: 'rect',
-						points: [
-							{ x: 0.2, y: 0.2 },
-							{ x: 0.4, y: 0.2 },
-							{ x: 0.4, y: 0.4 },
-							{ x: 0.2, y: 0.4 }, 
-						],
-						fillStyle: '#ee2',
-						strokeStyle: '#b00',
-						lineWidth: 0.05
-					},
-		      {
-		        id: 'roundStripyRect', 
-		        points: [
-		          { x: 0.4, y: 0.5, curve: -0.2 },
-		          { x: 0.8, y: 0.5 },
-		          { x: 0.8, y: 0.7, curve: -0.2 },
-		          { x: 0.4, y: 0.7 }
-		        ],
-		        fillStyle: '#d70',
-		        strokeStyle: '#900',
-		        lineWidth: 0.05,
-						/*
-		        pattern: {
-		 		     id: 'shirt',
-		 		     type: 'stripes', 
-		 		     colour1: '#38BDD1',
-		 		     width1: 0.4,
-		 		     colour2: '#000000',
-		 		     width2: 0.3,
-		 		     colour3: '#ffffff',
-		 		     width3: 0.04, 
-		 		     size: 0.25,
-		 		     rotation: 0,
-		 		     repeat: 0
-						}
-						*/
-		 	     },
-				]
-			};
-
-			editor.loadDesign(design);
-			editor.drawDesign();
-
+			my._editor.drawDesign();
 		}
 	}
+
+	var my = cm.shapinSafari;
 	
 })(canmango);

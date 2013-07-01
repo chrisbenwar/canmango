@@ -1,3 +1,5 @@
+var vec = physii.vector;
+
 /**
  * Creates an editor that reads a definition of a shape
  * in JSON and converts it to a shape on canvas.
@@ -413,7 +415,7 @@ var editor2d = function(canvas) {
 		},
 
 		/**
-		 * Create a new line and add it to an element of the design.
+		 * Create a new line and addx it to an element of the design.
 		 */
 		addLine: function(selectorID)
 		{
@@ -645,6 +647,16 @@ var editor2d = function(canvas) {
 		},
 		
 		/**
+		 * Gets the list of shapes in the design.
+		 *
+		 * Shapes are elems in the design with conversions
+		 * from 0.0-1.0 coords to canvas coords.
+		 */
+		getShapes: function() {
+			return _shapes;
+		},
+
+		/**
 		 * The clever stuff. This will draw one element of the
 		 * design.
 		 *
@@ -798,7 +810,7 @@ var editor2d = function(canvas) {
 		/**
 		 * Draws a pattern (currently shapes or squares).
 		 *
-		 * The pattern can be rotated.
+		 * The pattern can be rotatexd.
 		 *
 		 * It creates tiles from your definition of the pattern and
 		 * sets these as the pattern for a temporary canvas. The 
@@ -885,7 +897,7 @@ var editor2d = function(canvas) {
 					patternCtx.translate(shapeCentreX, shapeCentreY);
 				}
 
-				patternCtx.rotate(pattern.rotation * Math.PI);
+				vec.rotateXY(patternCtx, pattern.rotation * Math.PI);
 				patternCtx.translate(-(_width), -(_height));
 				patternCtx.beginPath();
 				patternCtx.rect(0, 0,_width * 2, _height * 2);
@@ -1183,74 +1195,74 @@ var editor2d = function(canvas) {
 			var vecx = end.x - start.x;
 			var vecy = end.y - start.y;
 			
-			var startVec = vector2d(vecx, vecy);
-			startVec.normalize();
-			startVec.rotate(Math.PI / 2);
-			startVec.scale(startWidth / 2);
+			var startVec = vec.create(vecx, vecy);
+			vec.normalize(startVec);
+			vec.rotateXY(vec, startVec, Math.PI / 2);
+			vec.scale(startVec, startWidth / 2);
 			
-			var endVec = vector2d(vecx, vecy);
-			endVec.normalize();
-			endVec.rotate(Math.PI / 2);
-			endVec.scale(endWidth / 2);
+			var endVec = vec.create(vecx, vecy);
+			vec.normalize(vecendVec);
+			vec.rotateXY(vec, endVec, Math.PI / 2);
+			vec.scale(endVec, endWidth / 2);
 			
-			var startPoint = vector2d(start.x, start.y);
-			var endPoint = vector2d(end.x, end.y);
+			var startPoint = vec.create(start.x, start.y);
+			var endPoint = vec.create(end.x, end.y);
 			
-			var point1 = vector2d(start.x, start.y);
-			point1.add(startVec);
-			var point2 = vector2d(end.x, end.y);
-			point2.add(endVec);
-			var point3 = vector2d(end.x, end.y);
-			point3.sub(endVec)
-			var point4 = vector2d(start.x, start.y);
-			point4.sub(startVec);
+			var point1 = vec.create(start.x, start.y);
+			vec.add(point1, startVec);
+			var point2 = vec.create(end.x, end.y);
+			vec.add(point2, endVec);
+			var point3 = vec.create(end.x, end.y);
+			vec.sub(point3, endVec)
+			var point4 = vec.create(start.x, start.y);
+			vec.sub(point4, startVec);
 			
 			if(line.curveType == 'straight')
 			{
-				fillCtx.moveTo(point1.vx, point1.vy);
-				fillCtx.lineTo(point2.vx, point2.vy);
-				fillCtx.lineTo(point3.vx, point3.vy);
-				fillCtx.lineTo(point4.vx, point4.vy);
+				fillCtx.moveTo(point1.x, point1.y);
+				fillCtx.lineTo(point2.x, point2.y);
+				fillCtx.lineTo(point3.x, point3.y);
+				fillCtx.lineTo(point4.x, point4.y);
 			}
 			else if(line.curveType == 'curve' || line.curveType == 'angle')
 			{
-				var curvePointVec = vector2d(curve.x - start.x, curve.y - start.y);
-				var lenToCurvePoint = curvePointVec.length();
-				var dirToCurvePoint = curvePointVec.direction();
-				var lineVec = vector2d(vecx, vecy);
-				var dirToEndPoint = lineVec.direction();
+				var curvePointVec = vec.create(curve.x - start.x, curve.y - start.y);
+				var lenToCurvePoint = vec.length(curvePointVec);
+				var dirToCurvePoint = vec.direction(curvePointVec);
+				var lineVec = vec.create(vecx, vecy);
+				var dirToEndPoint = vec.direction(lineVec);
 				var angleToCurvePoint = dirToCurvePoint - dirToEndPoint;
 				
 				var lenToIntersect = Math.cos(angleToCurvePoint) * lenToCurvePoint;
 				
-				var amountDownLine = lenToIntersect / lineVec.length();
+				var amountDownLine = lenToIntersect / vec.length(lineVec);
 				var widthAtIntersect = startWidth * amountDownLine + endWidth * (1 - amountDownLine);
 				
-				linceVec.normalize();
-				lineVec.rotate(Math.PI / 2);
-				lineVec.scale(widthAtIntersect / 2);
+				vec.normalize(lineVec);
+				vec.rotateXY(lineVec, Math.PI / 2);
+				vec.scale(lineVec, widthAtIntersect / 2);
 				
-				var curvePoint1 = vector2d(curve.x, curve.y);
-				curvePoint1.add(lineVec);
+				var curvePoint1 = vec.create(curve.x, curve.y);
+				vec.add(curvePoint1, lineVec);
 
-				var curvePoint2 = vector2d(curve.x, curve.y);
-				curvePoint2.sub(lineVec);
+				var curvePoint2 = vec.create(curve.x, curve.y);
+				vec.sub(curvePoint2, lineVec);
 				
 				if(line.curveType == 'curve')
 				{					
-					fillCtx.moveTo(point1.vx, point1.vy);
-					fillCtx.quadraticCurveTo(curvePoint1.vx, curvePoint1.vy, point2.vx, point2.vy);
-					fillCtx.lineTo(point3.vx, point3.vy);
-					fillCtx.quadraticCurveTo(curvePoint2.vx, curvePoint2.vy, point4.vx, point4.vy);
+					fillCtx.moveTo(point1.x, point1.y);
+					fillCtx.quadraticCurveTo(curvePoint1.x, curvePoint1.y, point2.x, point2.y);
+					fillCtx.lineTo(point3.x, point3.y);
+					fillCtx.quadraticCurveTo(curvePoint2.x, curvePoint2.y, point4.x, point4.y);
 				}
 				else if(line.curveType == 'angle')
 				{
-					fillCtx.moveTo(point1.vx, point1.vy);
-					fillCtx.lineTo(curvePoint1.vx, curvePoint1.vy);
-					fillCtx.lineTo(point2.vx, point2.vy);
-					fillCtx.lineTo(point3.vx, point3.vy);
-					fillCtx.lineTo(curvePoint2.vx, curvePoint2.vy);	
-					fillCtx.lineTo(point4.vx, point4.vy);
+					fillCtx.moveTo(point1.x, point1.y);
+					fillCtx.lineTo(curvePoint1.x, curvePoint1.y);
+					fillCtx.lineTo(point2.x, point2.y);
+					fillCtx.lineTo(point3.x, point3.y);
+					fillCtx.lineTo(curvePoint2.x, curvePoint2.y);	
+					fillCtx.lineTo(point4.x, point4.y);
 				}
 			}
 
@@ -1552,6 +1564,18 @@ var shape = function(properties) {
 			return _points.length;
 		},
 		
+		setPoint: function(i, x, y)
+		{
+			var point = _points[i];
+			
+			xReal = x / _xScale;
+			yReal = y / _yScale;
+
+			point.x = xReal;
+			point.y = yReal;
+		},
+
+
 		getPoint: function(i) {
 			var point = _points[i];
 			var offsetX = _x * _xScale;
@@ -1605,37 +1629,98 @@ var shape = function(properties) {
 			return _id;
 		},
 		
-		getCurve: function(i) {
+
+		getPointBefore: function(i)
+		{
+			var pointBeforeIndex = i - 1;
+
+			if(i == 0) 
+			{
+				pointBeforeIndex = _points.length - 1; 
+			}
+
+			var pointBefore = _points[pointBeforeIndex];
+
+			return pointBefore;
+		},
+
+		getCurveNormal: function(point, pointBefore)
+		{
+			var vecx = point.x - pointBefore.x;
+			var vecy = point.y - pointBefore.y;
+			
+			var midVec = this.getMidPoint(point, pointBefore);
+		
+			var normal = vec.create(vecx, vecy);
+			
+			vec.normalize(normal);
+			vec.rotateXY(normal, Math.PI / 2);
+			vec.scale(normal, point.curve);
+			
+			vec.add(normal, midVec);
+
+			return normal;
+		},
+
+		getMidPoint: function(point, pointBefore)
+		{
+			var vecx = point.x - pointBefore.x;
+			var vecy = point.y - pointBefore.y;
+			
+			var midPointX = pointBefore.x + (vecx / 2);
+			var midPointY = pointBefore.y + (vecy / 2);
+			var midVec = vec.create(midPointX, midPointY);
+
+			return midVec;
+		},
+
+		setCurve: function(i, x, y)
+		{
+			var v = physii.vector;
+
+			var point = _points[i];
+			var pointBefore = this.getPointBefore(i);
+
+			var vPoint = vec.create(point.x, point.y);
+			var vPointBefore = vec.create(pointBefore.x, pointBefore.y);
+			
+			xReal = x / _xScale;
+			yReal = y / _yScale;
+
+			var vNewPoint = vec.create(xReal, yReal); 
+
+			var vMidPoint = this.getMidPoint(vPoint, vPointBefore);
+
+			var vFromMidPoint = vec.sub(vNewPoint, vMidPoint, true);
+
+			var vCurveNormal = vec.sub(vPoint, vPointBefore, true);
+			vec.rotateXY(vCurveNormal, Math.PI / 2);
+			vec.normalize(vCurveNormal);
+
+			var vProj = vec.projectionOf(vCurveNormal, vFromMidPoint);
+
+			var curve = vec.length(vProj);
+			if(vec.angleTo(vCurveNormal, vFromMidPoint) > Math.PI / 2)
+			{
+				curve = -curve;
+			}
+
+			point.curve = curve;
+		},
+
+		getCurve: function(i) 
+		{
 			var point = _points[i];
 			var offsetX = _x * _xScale;
 			var offsetY = _y * _yScale;
 			
-			if(point.curve)
+			if('curve' in point)
 			{
+				var pointBefore = this.getPointBefore(i);	
+			
+				var vec = this.getCurveNormal(point, pointBefore);	
 				
-				var pointBeforeIndex = i - 1;
-				if(i == 0) 
-				{
-					pointBeforeIndex = _points.length - 1; 
-				}
-				
-				
-				var pointBefore = _points[pointBeforeIndex];
-				var vecx = point.x - pointBefore.x;
-				var vecy = point.y - pointBefore.y;
-				
-				var midPointX = pointBefore.x + (vecx / 2);
-				var midPointY = pointBefore.y + (vecy / 2);
-				var midVec = vector2d(midPointX, midPointY);
-				var vec = vector2d(vecx, vecy);
-				
-				vec.normalize();
-				vec.rotate(Math.PI / 2);
-				vec.scale(point.curve);
-				
-				vec.add(midVec);
-				
-				return {x: vec.vx * _xScale + offsetX, y: vec.vy * _yScale + offsetY};
+				return {x: vec.x * _xScale + offsetX, y: vec.y * _yScale + offsetY};
 			}
 			else
 			{

@@ -22,6 +22,6 @@ var canmango = canmango || {};
   });
 
 	canmangoControllers.controller('ShapinSafariCtrl', function($scope) {
-			$scope.$on('$viewContentLoaded', canmango.shapinSafari.draw());
+			$scope.$on('$viewContentLoaded', canmango.shapinSafari.init());
 	});
 })(canmango);
