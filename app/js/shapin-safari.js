@@ -22,6 +22,38 @@ var canmango = canmango || {};
 				}
 			]
 		},
+		_imageLoader: null,
+
+		save: function()
+		{
+			var $nameInput = $('#shapeName');
+			var name = $nameInput.val();
+			var design = my._editor.getDesign();
+			amplify.store(name, design);
+			this.loadSaved();
+		},
+
+		loadSaved: function()
+		{
+			var designs = amplify.store();
+			var imgDataURL = null, design = null;
+			var $designsElem = $('#designs');
+			
+			var designsHTML = '';
+			
+			for(var canvasID in designs)
+			{
+				design = designs[canvasID];
+				my._imageLoader.loadDesign(design);
+				my._imageLoader.drawDesign();
+				tempCanvas.style.display = 'block';
+				imgDataURL = my._imageLoader.toDataURL(); 
+				tempCanvas.style.display = 'none';
+				designsHTML += '<img src="' + imgDataURL + '" />';
+			}
+
+			$designsElem.html(designsHTML);
+		},
 
 		updateHandles: function(shapeID, ignoreID)
 		{
@@ -54,6 +86,9 @@ var canmango = canmango || {};
 		init: function(design) 
 		{
 			my._design = design || my._defaultDesign;
+
+			var tempCanvas = document.getElementById('tempCanvas');
+			my._imageLoader = editor2d(tempCanvas);
 
 			my._canvas = document.getElementById('canmangoCanvasUnderlay');
 			my._editor = editor2d(my._canvas);

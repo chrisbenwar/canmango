@@ -637,6 +637,7 @@ var editor2d = function(canvas) {
 				this.drawShape(_shapes[id]); 
 			}
 		},
+
 		
 		/**
 		 * Accessor to get the current design. If you change it
@@ -1484,6 +1485,14 @@ var editor2d = function(canvas) {
 			return designDataJSON;
 		},
 		
+		/**
+		 * Gets an image url representing the canvas image.
+		 */
+		toDataURL: function()
+		{
+			return canvas.toDataURL();
+		},
+
 		save: function(url) {
 			var canvasData = _canvas.toDataURL("image/png");
 			
