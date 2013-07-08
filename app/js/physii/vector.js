@@ -77,16 +77,16 @@ var physii = physii || {};
 		 */
 		scale: function(v, factor, clone) 
 		{
-			if(!clone)
+			if(clone)
+			{
+				return {"x": v.x * factor, "y": v.y * factor, "z": v.z * factor};
+			}
+			else
 			{
 				v.x *= factor;
 				v.y *= factor;
 				v.z *= factor;
 				return v;
-			}
-			else
-			{
-				return {"x": v.x * factor, "y": v.y * factor, "z": v.z * factor};
 			}
 		},
 				
@@ -99,17 +99,18 @@ var physii = physii || {};
 		 *
 		 * @returns Either v or a clone with the operation applied.
 		 */
-		add: function(v, v2, clone) {
-			if(!clone)
+		add: function(v, v2, clone) 
+		{
+			if(clone)
+			{
+				return {"x": v.x + v2.x, "y": v.y + v2.y, "z": v.z + v2.z};
+			}
+			else
 			{
 				v.x += v2.x;
 				v.y += v2.y;
 				v.z += v2.z;
 				return v;
-			}
-			else
-			{
-				return {"x": v.x + v2.x, "y": v.y + v2.y, "z": v.z + v2.z};
 			}
 		},
 				
@@ -122,17 +123,18 @@ var physii = physii || {};
 		 *
 		 * @returns Either v or a clone with the operation applied.
 		 */
-		sub: function(v, v2, clone) {
-			if(!clone)
+		sub: function(v, v2, clone) 
+		{
+			if(clone)
+			{
+				return {"x": v.x - v2.x, "y": v.y - v2.y, "z": v.z - v2.z};
+			}
+			else
 			{
 				v.x -= v2.x;
 				v.y -= v2.y;
 				v.z -= v2.z;
 				return v;
-			}
-			else
-			{
-				return {"x": v.x - v2.x, "y": v.y - v2.y, "z": v.z - v2.z};
 			}
 		},
 				
@@ -183,24 +185,26 @@ var physii = physii || {};
 		 *
 		 * @returns Either v or a clone with the operation applied.
 		 */
-		negate: function(v, clone) {
-			if(!clone)
+		negate: function(v, clone) 
+		{
+			if(clone)
+			{
+				return {"x": -v.x, "y": -v.y, "z": -v.z};	
+			}
+			else
 			{
 				v.x = -v.x;
 				v.y = -v.y;
 				v.z = -v.z;
 				return v;
 			}
-			else
-			{
-				return {"x": -v.x, "y": -v.y, "z": -v.z};	
-			}
 		},
 				
 		/**
 		 * Find the length of a vector.
 		 */
-		length: function(v) {
+		length: function(v) 
+		{
 			return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 		},
 
@@ -211,7 +215,8 @@ var physii = physii || {};
 		 *
 		 * @param v A vector.
 		 */	
-		lengthSquared: function(v) {
+		lengthSquared: function(v) 
+		{
 			return v.x * v.x + v.y * v.y + v.z * v.z;
 		},
 				
@@ -221,20 +226,11 @@ var physii = physii || {};
 		 * @param v A vector.
 		 * @param clone Whether to operate on v or a cloned vector.
 		 */	
-		normalize: function(v, clone) {
+		normalize: function(v, clone) 
+		{
 			var len = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 
-			if(!clone)
-			{
-				if(len) {
-					v.x /= len;
-					v.y /= len;
-					v.z /= len;
-				}
-
-				return v;			
-			}
-			else
+			if(clone)
 			{
 				if(len)
 				{
@@ -245,9 +241,18 @@ var physii = physii || {};
 					return {"x": 0, "y": 0, "z": 0};
 				}
 			}
+			else
+			{
+				if(len) {
+					v.x /= len;
+					v.y /= len;
+					v.z /= len;
+				}
+
+				return v;			
+			}
 		},
 				
-
 		/**
 		 * Rotate a vector in 2 dimensions leaving the value of the other 
 		 * dimension in tact.
@@ -269,7 +274,8 @@ var physii = physii || {};
 		 * @param clone Whether to operate on v or a cloned vector.
 		 * @returns Either v or a clone with the operation applied.
 		 */
-		rotate2D: function(v, fromAxis, toAxis, otherAxis, angle, clone) {
+		rotate2D: function(v, fromAxis, toAxis, otherAxis, angle, clone) 
+		{
 			var c = Math.cos(angle);
 			var s = Math.sin(angle);
 
@@ -297,7 +303,7 @@ var physii = physii || {};
 		 * Find the angle from an axis ignoring one component 
 		 * of a vector.
 		 *
-		 * Example: direction2D(v, 'x', 'y');
+		 * Example: angle2D(v, 'x', 'y');
 		 *
 		 * This will tell you the angle between the vector and 
 		 * the +ve x-axis in the direction of the +ve y-axis.
@@ -309,7 +315,7 @@ var physii = physii || {};
 		 *
 		 * @returns angle from 0 -> 2pi
 		 */
-		direction2D: function(v, fromAxis, toAxis)
+		angle2D: function(v, fromAxis, toAxis)
 		{
 			if(v[toAxis] >= 0)
 			{
@@ -320,149 +326,75 @@ var physii = physii || {};
 				return 2 * Math.PI + Math.atan2(v[toAxis], v[fromAxis]);
 			}
 		},
+
 		/**
-		 * Finds the direction from one vec to another rotating
-		 * around the z axis.
+		 * Finds the direction of closest rotation from one vec to 
+		 * another in a plane.
+		 *
+		 * It gives you the direction +ve/-ve, not the angle.
 		 *
 		 * If the shortest rotation is anticlockwise then the 
-		 * result will be +ve, otherwise -ve.
+		 * result will be +ve, otherwise -ve. "clockwise" means
+		 * moving from one +ve axis to another.
 		 * 
 		 * @param v1 The vector to rotate.
 		 * @param v2 The vector to rotate towards.
+		 * @param plane ('xy'|'yz'|'xz') Plane to rotate in default xy.
 		 * @returns +ve if clockwise, -ve otherwise.
 		 */
-		xyDirectionTo: function(v1, v2)
+		directionTo2D: function(v1, v2, plane)
 		{
-			var planeNormal = {"x": 0, "y": 0, "z": 1};
+			var normal = null;
+
+			if(plane == 'xy') normal = {"x": 0, "y": 0, "z": 1};
+			if(plane == 'yz') normal = {"x": 1, "y": 0, "z": 0};
+			else if(plane == 'xz') normal = {"x": 0, "y": 1, "z": 0};
+
 			var cross = my.cross(v1, v2, true);
-			var dot = my.dot(cross, planeNormal);
+			var dot = my.dot(cross, normal);
 			return dot;
 		},
-				
+
 		/**
-		 * Finds the direction from one vec to another rotating
-		 * around the y axis.
+		 * Finds the distance between two points with one of their
+		 * dimensions flattened.
 		 *
-		 * If the shortest rotation is anticlockwise then the 
-		 * result will be +ve, otherwise -ve.
-		 * 
-		 * @param v1 The vector to rotate.
-		 * @param v2 The vector to rotate towards.
-		 * @returns +ve if clockwise, -ve otherwise.
+		 * plane is one of ('xy'|'xz'|'yz'). The value of the other
+		 * dimension will be set to 0.
 		 */
-		xzDirectionTo: function(vec, vVec)
+		distanceTo2D: function(p1, p2, plane)
 		{
-			var planeNormal = {"x": 0, "y": 1, "z": 0};
-			var cross = my.cross(vec, vVec, true);
-			var dot = my.dot(cross, planeNormal);
-			return dot;
+			var pFlat1 = {"x": p1.x, "y": p1.y, "z": 0};
+			var pFlat2 = {"x": p2.x, "y": p2.y, "z": 0};
+
+			if(plane == 'yz')
+			{
+				pFlat1 = {"x": 0, "y": p1.y, "z": p1.z};
+				pFlat2 = {"x": 0, "y": p2.y, "z": p2.z};
+			}
+			else if(plane == 'xz')
+			{
+				pFlat1 = {"x": p1.x, "y": 0, "z": p1.z};
+				pFlat2 = {"x": p2.x, "y": 0, "z": p2.z};
+			}
+
+			return my.length(my.sub(pFlat1, pFlat2, true));
 		},
-				
+
 		/**
-		 * Finds the distance between two points in the xy
-		 * plane.
+		 * Find the shortest angle from one vector to another.
 		 *
-		 * It takes two vectors, removes the z-component and then 
-		 * finds the distance.
-		 *
-		 * @param vP1 Point 1.
-		 * @param vP2 Point 2.
-		 * @returns The distance.
-		 */
-		xyDistanceTo: function(vP1, vP2)
+		 * @param v1 A vector.
+		 * @param v2 Another vector.
+		 */	
+		angleBetween: function(v1, v2)
 		{
-			var flattened = my.flattenZ(vP1, true);
-			var flattenedPoint = my.flattenZ(vP2, true);
-			var subbed = my.sub(flattened, flattenedPoint, true);
-			return my.length(subbed);
+			var l1 = my.length(v1);
+			var l2 = my.length(v2);
+
+			return Math.acos(my.dot(v1, v2) / (l1 * l2));
 		},
 				
-		/**
-		 * Finds the distance between two points in the xz
-		 * plane.
-		 *
-		 * It takes two vectors, removes the y-component and then 
-		 * finds the distance.
-		 *
-		 * @param vP1 Point 1.
-		 * @param vP2 Point 2.
-		 * @returns The distance.
-		 */
-		xzDistanceTo: function(vP1, vP2)
-		{
-			var flattened = my.flattenY(vP1, true);
-			var flattenedPoint = my.flattenY(vP2, true);
-			var subbed = my.sub(flattened, flattenedPoint, true);
-			return my.length(subbed);
-		},
-				
-		flattenZ: function(vec, makeNew)
-		{
-			if(makeNew)
-			{
-				return {"x": vec.x, "y": vec.y, "z": 0};
-			}
-			else
-			{
-				vec.z = 0;
-				return vec;
-			}
-		},
-				
-		flattenY: function(vec, makeNew)
-		{
-			if(makeNew)
-			{
-				return {"x": vec.x, "y": 0, "z": vec.z};
-			}
-			else
-			{
-				vec.y = 0;
-				return vec;
-			}
-		},
-				
-		/*
-		 * Finds shortest angle between two vectors
-		 * 
-		 * Will return Nan if one vec has no length
-		 */
-		angleTo: function(vec, vVector)
-		{			
-			var val = my.dot(vec, vVector) / (my.length(vec) * my.length(vVector)); 
-			var angle = Math.acos(val);
-			return angle;
-		},
-				
-		/**
-		 * Rotate a vector through an angle in z.
-		 */
-		rotateZ: function(vec, angle, makeNew) {
-			var length = my.length(vec);
-			var direction = my.directionXY(vec);
-
-			var newZ = length * Math.sin(angle);
-
-			var newX  = length * Math.cos(angle);
-			var newY = 0;
-
-			var newVec = {"x": newX, "y": newY, "z": newZ};
-
-			my.rotateXY(newVec, direction);
-
-			if(!makeNew)
-			{
-				vec.x = newVec.x;
-				vec.y = newVec.y;
-				vec.z = newVec.z;
-				return vec;
-			}
-			else
-			{
-				return newVec;
-			}
-		},
-
 		/**
 		 * Get a string representation of this vector.
 		 */
@@ -486,7 +418,7 @@ var physii = physii || {};
 		equal: function(v1, v2, precision)
 		{
 			precision = precision || my.precision;
-debugger; 
+
 			var x = Math.abs(v2.x - v1.x);
 			var y = Math.abs(v2.y - v1.y);
 			var z = Math.abs(v2.z - v1.z);
@@ -500,8 +432,9 @@ debugger;
 		 * @param angle The angle in radians.
 		 * @returns The angle in degrees.
 		 */
-		radToDeg: function(angle) { 
-			return (angle / (Math.PI * 2)) * 360;
+		radToDeg: function(angle) 
+		{ 
+			return 360 * (angle / (2 * Math.PI));
 		},
 
 		/**
@@ -510,61 +443,49 @@ debugger;
 		 * @param angle The angle in degrees.
 		 * @returns The angle in radians.
 		 */
-		degToRad: function(angle) {
-			return (angle / 360) * (Math.PI * 2);
+		degToRad: function(angle) 
+		{
+			return 2 * Math.PI * (angle / 360);
 		},
 
 		/**
-		 * Get the dot product of two vectors.
+		 * Dot product of two vectors.
 		 *
-		 * One use of the dot product is to find the projection
-		 * of one vector on to another (to find the amount of one
-		 * vector that points in the same direction as the other).
-		 *
-		 * @param vec The first vector.
-		 * @param vec2 The second vector.
+		 * @param v1 A vector.
+		 * @param v2 Another vector.
 		 * @returns The dot product of the two vectors.
 		 */
-		dot: function(vec, vec2) {
-			return vec.x * vec2.x + vec.y * vec2.y + vec.z * vec2.z;
+		dot: function(v1, v2) 
+		{
+			return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 		},
 
 		/**
-		 * Get the cross product of two vectors.
+		 * Cross product of two vectors.
 		 *
-		 * The cross product creates a vector which is perpendicular
-		 * to the other two vectors.
-		 *
-		 * @param vec The first vector.
-		 * @param vec2 The second vector.
-		 * @param makeNew Whether to change vec or make a new vector.
-		 * @returns The cross product vector.
+		 * @param v1 A vector.
+		 * @param v2 Another vector.
+		 * @returns A vector that is perpendicular to the plane defined
+		 *          by the two v1tors.
 		 */
-		cross: function(vec, vec2, makeNew) {
-			var x = (vec.y * vec2.z) - (vec.z * vec2.y);
-			var y = (vec.z * vec2.x) - (vec.x * vec2.z);
-			var z = (vec.x * vec2.y) - (vec.y * vec2.x);
-			if(makeNew)
-			{
-				return {"x": x, "y": y, "z": z};
-			}
-			else
-			{
-				vec.x = x;
-				vec.y = y;
-				vec.z = z;
-				return vec;
-			}
+		cross: function(v1, v2) 
+		{
+			var x = (v1.y * v2.z) - (v1.z * v2.y);
+			var y = (v1.z * v2.x) - (v1.x * v2.z);
+			var z = (v1.x * v2.y) - (v1.y * v2.x);
+
+			return {"x": x, "y": y, "z": z};
 		},
 
 		/**
-		 * Creates a copy of a vector.
+		 * Clone a vector.
 		 *
-		 * @param vec The vector to clone.
-		 * @returns The cloned vector.
+		 * @param v A vector.
+		 * @returns A newly created vector with the same components.
 		 */
-		clone: function(vec) {
-			return {"x": vec.x, "y": vec.y, "z": vec.z};
+		clone: function(v) 
+		{
+			return {"x": v.x, "y": v.y, "z": v.z};
 		},
 	};
 

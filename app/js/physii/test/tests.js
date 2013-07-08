@@ -1,5 +1,11 @@
 'use strict';
 
+function similar(a, b, prec)
+{
+	prec = prec || 1e-2;
+	return Math.abs(a - b) < prec;
+}
+
 var vec = physii.vector;
 
 test('vector equal', function() {
@@ -45,16 +51,11 @@ test('vector rotate2D', function() {
 
 }); 
 
-function similar(a, b, prec)
-{
-	prec = prec || 1e-2;
-	return Math.abs(a - b) < prec;
-}
 
-test('vector direction2D', function() {
+test('vector angle2D', function() {
 	var v1 = vec.create(10, 10, 0);
 
-	var r1 = vec.direction2D(v1, 'x', 'y');
+	var r1 = vec.angle2D(v1, 'x', 'y');
 
 	ok(similar(r1, Math.PI / 4),
 		"Direction (10,10,0) in xy is 45 deg? " +
@@ -62,7 +63,7 @@ test('vector direction2D', function() {
 		);
 
 	var v2 = vec.create(10, 0, 10);
-	var r2 = vec.direction2D(v2, 'y', 'z');
+	var r2 = vec.angle2D(v2, 'y', 'z');
 
 	ok(similar(r2, Math.PI / 2),
 		"Direction (10,0,10) in xy is 45 deg? " +
@@ -70,10 +71,93 @@ test('vector direction2D', function() {
 		);
 
 	var v3 = vec.create(0, 0, -10);
-	var r3 = vec.direction2D(v3, 'x', 'z');
+	var r3 = vec.angle2D(v3, 'x', 'z');
 
 	ok(similar(r3, 3 * Math.PI / 2),
 		"Direction (0,0,-10) in xy is 135 deg? " +
 		JSON.stringify(r3)
 		);
+}); 
+
+test('vector directionTo2D', function() {
+	var v1 = vec.create(1, 0, 0);
+	var v2 = vec.create(0, 1, 0);
+
+	var res = vec.directionTo2D(v1, v2, 'xy');
+
+	ok(res > 0, 'Direction from ' + vec.toString(v1) + 
+		vec.toString(v2) + 'is +ve? ' + JSON.stringify(res));
+
+	var res = vec.directionTo2D(v2, v1, 'xy');
+
+	ok(res < 0, 'Direction from ' + vec.toString(v2) + 
+		vec.toString(v1) + 'is -ve? ' + JSON.stringify(res));
+
+	v1 = vec.create(1, 0, 1);
+	v2 = vec.create(0, 1, 0);
+
+	var res = vec.directionTo2D(v1, v2, 'yz');
+
+	ok(res < 0, 'Direction from ' + vec.toString(v1) + 
+		vec.toString(v2) + 'is +ve? ' + JSON.stringify(res));
+
+	v1 = vec.create(0, 0, 1);
+	v2 = vec.create(0, -1, 0);
+
+	var res = vec.directionTo2D(v1, v2, 'yz');
+
+	ok(res > 0, 'Direction from ' + vec.toString(v1) + 
+		vec.toString(v2) + 'is +ve? ' + JSON.stringify(res));
+
+	v1 = vec.create(0, 1, 0);
+	v2 = vec.create(0, 0, 1);
+
+	var res = vec.directionTo2D(v1, v2, 'yz');
+
+	ok(res > 0, 'Direction from ' + vec.toString(v1) + 
+		vec.toString(v2) + 'is +ve? ' + JSON.stringify(res));
+
+	v1 = vec.create(0, 1, 0);
+	v2 = vec.create(0, 0, -1);
+
+	var res = vec.directionTo2D(v1, v2, 'yz');
+
+	ok(res < 0, 'Direction from ' + vec.toString(v1) + 
+		vec.toString(v2) + 'is +ve? ' + JSON.stringify(res));
+
+	v1 = vec.create(-1, 0, 0);
+	v2 = vec.create(0, 0, 1);
+
+	var res = vec.directionTo2D(v1, v2, 'xz');
+
+	ok(res > 0, 'Direction from ' + vec.toString(v1) + 
+		vec.toString(v2) + 'is +ve? ' + JSON.stringify(res));
+}); 
+
+test('vector distanceTo2D', function() {
+	var v1 = vec.create(3, 0, 10);
+	var v2 = vec.create(0, 4, 7);
+
+	var d = vec.distanceTo2D(v1, v2, 'xy');
+
+	ok(d == 5, 'Dist ' + vec.toString(v1) + ' to ' +
+		vec.toString(v2) + ' xy is 5? ' + JSON.stringify(d));
+
+	var v1 = vec.create(3, 0, 0);
+	var v2 = vec.create(0, 50, 4);
+
+	var d = vec.distanceTo2D(v1, v2, 'xz');
+
+	ok(d == 5, 'Dist ' + vec.toString(v1) + ' to ' +
+		vec.toString(v2) + ' xz is 5? ' + JSON.stringify(d));
+}); 
+
+test('vector angleBetween', function() {
+	var v1 = vec.create(0, 1, 0);
+	var v2 = vec.create(-10, 10, 0);
+
+	var a = vec.angleBetween(v1, v2);
+
+	ok(similar(a, Math.PI / 4), "Angle between " + vec.toString(v1) + 
+		' and ' + vec.toString(v2) + ' is pi/4? ' + JSON.stringify(a));
 }); 
