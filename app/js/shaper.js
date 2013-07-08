@@ -811,7 +811,7 @@ var editor2d = function(canvas) {
 		/**
 		 * Draws a pattern (currently shapes or squares).
 		 *
-		 * The pattern can be rotatexd.
+		 * The pattern can be rotated.
 		 *
 		 * It creates tiles from your definition of the pattern and
 		 * sets these as the pattern for a temporary canvas. The 
@@ -898,7 +898,7 @@ var editor2d = function(canvas) {
 					patternCtx.translate(shapeCentreX, shapeCentreY);
 				}
 
-				vec.rotateXY(patternCtx, pattern.rotation * Math.PI);
+				vec.rotate2D(patternCtx, 'x', 'y', 'z', pattern.rotation * Math.PI);
 				patternCtx.translate(-(_width), -(_height));
 				patternCtx.beginPath();
 				patternCtx.rect(0, 0,_width * 2, _height * 2);
@@ -1198,12 +1198,12 @@ var editor2d = function(canvas) {
 			
 			var startVec = vec.create(vecx, vecy);
 			vec.normalize(startVec);
-			vec.rotateXY(vec, startVec, Math.PI / 2);
+			vec.rotate2D(startVec, 'x', 'y', 'z', Math.PI / 2);
 			vec.scale(startVec, startWidth / 2);
 			
 			var endVec = vec.create(vecx, vecy);
 			vec.normalize(vecendVec);
-			vec.rotateXY(vec, endVec, Math.PI / 2);
+			vec.rotate2D(endVec, 'x', 'y', 'z', Math.PI / 2);
 			vec.scale(endVec, endWidth / 2);
 			
 			var startPoint = vec.create(start.x, start.y);
@@ -1240,7 +1240,7 @@ var editor2d = function(canvas) {
 				var widthAtIntersect = startWidth * amountDownLine + endWidth * (1 - amountDownLine);
 				
 				vec.normalize(lineVec);
-				vec.rotateXY(lineVec, Math.PI / 2);
+				vec.rotate2D(lineVec, 'x', 'y', 'z', Math.PI / 2);
 				vec.scale(lineVec, widthAtIntersect / 2);
 				
 				var curvePoint1 = vec.create(curve.x, curve.y);
@@ -1663,7 +1663,7 @@ var shape = function(properties) {
 			var normal = vec.create(vecx, vecy);
 			
 			vec.normalize(normal);
-			vec.rotateXY(normal, Math.PI / 2);
+			vec.rotate2D(normal, 'x', 'y', 'z', Math.PI / 2);
 			vec.scale(normal, point.curve);
 			
 			vec.add(normal, midVec);
@@ -1703,10 +1703,10 @@ var shape = function(properties) {
 			var vFromMidPoint = vec.sub(vNewPoint, vMidPoint, true);
 
 			var vCurveNormal = vec.sub(vPoint, vPointBefore, true);
-			vec.rotateXY(vCurveNormal, Math.PI / 2);
+			vec.rotate2D(vCurveNormal, 'x', 'y', 'z', Math.PI / 2);
 			vec.normalize(vCurveNormal);
 
-			var vProj = vec.projectionOf(vCurveNormal, vFromMidPoint);
+			var vProj = vec.projection(vCurveNormal, vFromMidPoint);
 
 			var curve = vec.length(vProj);
 			if(vec.angleTo(vCurveNormal, vFromMidPoint) > Math.PI / 2)

@@ -3,205 +3,242 @@ var physii = physii || {};
 
 (function(p) {
 	/**
+	 * Functions for creating and manipulating vectors.
+	 *
+	 * Vectors are stored in format {"x": xVal, "y": yVal, "z": zVal}
+	 *
 	 * This is not well tested or production ready.
+	 *
+	 * Based on Physics for Game Developers by David M Bourg but 
+	 * with a few extra treats thrown in.
 	 */
-	p.vector = {
-		precision: 1e-6,
-				
-		serialize: function(vec) {
-			return [vec.x, vec.y, vec.z];
-		},
+	p.vector = 
+	{
+		/**
+		 * Precision of comparison operations.
+		 */
+		precision: 1e-8,
 
-		deserialize: function(data) {
-			return my.create(data[0], data[1], data[2]);
-		},
-				
-		create: function(x, y, z) {
-			if(!x) x = 0;
-			if(!y) y = 0;
-			if(!z) z = 0;
+		/**
+		 * Create a representation of a vector in format
+		 * { "x": xVal, "y": yVal, "z": zVal }
+		 */
+		create: function(x, y, z)
+		{
+			x = x || 0; 
+			y = y || 0; 
+			z = z || 0;
+
 			return {"x": x, "y": y, "z": z};
 		},
 
-		set: function(vec, x, y, z) {
-			if(!x) x = 0;
-			if(!y) y = 0;
-			if(!z) z = 0;
-			vec.x = x;
-			vec.y = y;
-			vec.z = z;
-		},
-
-		fromCoords: function(v3d) {
-			return my.create(v3d.x, v3d.y, v3d.z);
-		},
-				
-		coords: function(vec, decimalPlaces, format) {
-			if(decimalPlaces)
-			{
-				if(format == "array")
-				{
-					return [
-						vec.x.toFixed(decimalPlaces), 
-						vec.y.toFixed(decimalPlaces), 
-						vec.z.toFixed(decimalPlaces)
-					];
-				}
-				else
-				{
-					return {
-						"x": vec.x.toFixed(decimalPlaces), 
-						"y": vec.y.toFixed(decimalPlaces), 
-						"z": vec.z.toFixed(decimalPlaces)
-					};					
-				}
-			}
-			else
-			{
-				if(format == "array")
-				{
-					return [vec.x, vec.y, vec.z];
-				}				
-				else
-				{				
-					return {"x": vec.x, "y": vec.y, "z": vec.z};				
-				}				
-			}
-		},
-				
-		scale: function(vec, scale, makeNew) {
-			if(!makeNew)
-			{
-				vec.x *= scale;
-				vec.y *= scale;
-				vec.z *= scale;
-				return vec;
-			}
-			else
-			{
-				return {"x": vec.x * scale, "y": vec.y * scale, "z": vec.z * scale};
-			}
-		},
-				
-		add: function(vec, vec2, makeNew) {
-			if(!makeNew)
-			{
-				vec.x += vec2.x;
-				vec.y += vec2.y;
-				vec.z += vec2.z;
-				return vec;
-			}
-			else
-			{
-				return {"x": vec.x + vec2.x, "y": vec.y + vec2.y, "z": vec.z + vec2.z};
-			}
-		},
-				
-		sub: function(vec, vec2, makeNew) {
-			if(!makeNew)
-			{
-				vec.x -= vec2.x;
-				vec.y -= vec2.y;
-				vec.z -= vec2.z;
-				return vec;
-			}
-			else
-			{
-				return {"x": vec.x - vec2.x, "y": vec.y - vec2.y, "z": vec.z - vec2.z};
-			}
-		},
-				
-		resist: function(vec, vec2) {
-			if(vec.x > 0) vec.x -= vec2.x;
-			else if(vec.x < 0) vec.x += vec2.x;
-
-			if(vec.y > 0) vec.y -= vec2.y;
-			else if(vec.y < 0) vec.y += vec2.y;
-
-			if(vec.z > 0) vec.z -= vec2.z;
-			else if(vec.z < 0) vec.z += vec2.z;			
-		},
-
-		/*
-			* The projection is the portion of vVector in the same direction as this
-			*
-			*
-			*/
-		projectionOf: function(vec, vVector)
+		/**
+		 * Convert from {"x": xVal, "y": yVal, "z": zVal} to
+		 * [xVal, yVal, zVal]
+		 */			
+		toArray: function(v) 
 		{
-			var N = my.normalize(vec, true);
-			my.scale(N, my.dot(vVector, N));
-			return N;
+			return [v.x, v.y, v.z];
+		},
+
+		/**
+		 * Convert from [xVal, yVal, zVal] to
+		 * {"x": xVal, "y": yVal, "z": zVal}
+		 */			
+		fromArray: function(vArr) 
+		{
+			var x = vArr[0] || 0;
+			var y = vArr[1] || 0;
+			var z = vArr[2] || 0;
+
+			return {"x": x, "y": y, "z": z};
+		},
+
+		/**
+		 * Shorthand for setting x, y and z for a vector.
+		 *
+		 * @returns A reference to the vector.
+		 */
+		set: function(v, x, y, z) 
+		{
+			v.x = x || 0; 
+			v.y = y || 0; 
+			v.z = z || 0;
+		},
+
+		/**
+		 * Multiply each component of the vector by a number
+		 *
+		 * @param v The vector.
+		 * @param factor The value to multiply by.
+		 * @param clone Whether to operate on v or a cloned vector.
+		 *
+		 * @returns Either v or a clone with the operation applied.
+		 */
+		scale: function(v, factor, clone) 
+		{
+			if(!clone)
+			{
+				v.x *= factor;
+				v.y *= factor;
+				v.z *= factor;
+				return v;
+			}
+			else
+			{
+				return {"x": v.x * factor, "y": v.y * factor, "z": v.z * factor};
+			}
 		},
 				
-		/*
-			* The rejection is the portion of vVector orthogonal to this
-			*/
-		rejectionOf: function(vec, vVector)
-		{
-			var N = my.normalize(vec, true);
-			var rejection = my.sub(vVector, my.projectionOf(vec, vVector), true);
-			return rejection;
+		/**
+		 * Add two vectors together.
+		 *
+		 * @param v A vector.
+		 * @param v2 A vector to add.
+		 * @param clone Whether to operate on v or a cloned vector.
+		 *
+		 * @returns Either v or a clone with the operation applied.
+		 */
+		add: function(v, v2, clone) {
+			if(!clone)
+			{
+				v.x += v2.x;
+				v.y += v2.y;
+				v.z += v2.z;
+				return v;
+			}
+			else
+			{
+				return {"x": v.x + v2.x, "y": v.y + v2.y, "z": v.z + v2.z};
+			}
 		},
-
-		bounce: function(vec, normal)
+				
+		/**
+		 * Subtract one vector from another.
+		 *
+		 * @param v A vector
+		 * @param v2 A vector to subtract from v2
+		 * @param clone Whether to operate on v or a cloned vector.
+		 *
+		 * @returns Either v or a clone with the operation applied.
+		 */
+		sub: function(v, v2, clone) {
+			if(!clone)
+			{
+				v.x -= v2.x;
+				v.y -= v2.y;
+				v.z -= v2.z;
+				return v;
+			}
+			else
+			{
+				return {"x": v.x - v2.x, "y": v.y - v2.y, "z": v.z - v2.z};
+			}
+		},
+				
+		/**
+		 * Find the component of a vector that is pointing in the
+		 * same direction as another vector.
+		 *
+		 * @param v A vector.
+		 * @param v2 A vector to project on to v.
+		 */
+		projection: function(v, v2)
 		{
-			var N = my.normalize(normal, true); 
-			var V = my.clone(vec);
-
-			my.scale(N, -2 * my.dot(V, N));
-			my.add(N, V);
-
+			var N = my.normalize(v, true);
+			my.scale(N, my.dot(v2, N));
 			return N;
 		},
 
-		bounceZ: function(vec)
+		/**
+		 * Find the component of one vector that points perpendicular
+		 * from another vector to it.
+		 *
+		 * @param v A vector to point the rejection from.
+		 * @param v2 A vector to point the rejection to. 
+		 */
+		rejection: function(v, v2)
 		{
-			var V = my.clone(vec);
-			V.z = -V.z;
-			return V;
+			var proj = my.projectionOf(v, v2, true);
+			var rej = my.sub(v2, proj, true);
+			return rej;
 		},
 
-		negate: function(vec, makeNew) {
-			if(!makeNew)
+		/**
+		 * Reflect a vector in a mirror defined by a normal.
+		 */
+		reflect: function(v, normal)
+		{
+			var normal = my.normalize(normal, true); 
+			my.scale(normal, -2 * my.dot(v, normal));
+			my.add(normal, v);
+			return normal;
+		},
+
+		/**
+		 * Point a vector in the opposite direction.
+		 *
+		 * @param v A vector.
+		 * @param clone Whether to operate on v or a cloned vector.
+		 *
+		 * @returns Either v or a clone with the operation applied.
+		 */
+		negate: function(v, clone) {
+			if(!clone)
 			{
-				vec.x = -vec.x;
-				vec.y = -vec.y;
-				vec.z = -vec.z;
-				return vec;
+				v.x = -v.x;
+				v.y = -v.y;
+				v.z = -v.z;
+				return v;
 			}
 			else
 			{
-				return {"x": -vec.x, "y": -vec.y, "z": -vec.z};	
+				return {"x": -v.x, "y": -v.y, "z": -v.z};	
 			}
 		},
 				
-		length: function(vec) {
-			return Math.sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
+		/**
+		 * Find the length of a vector.
+		 */
+		length: function(v) {
+			return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 		},
-				
-		lengthSquared: function(vec) {
-			return vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
-		},
-				
-		normalize: function(vec, makeNew) {
-			var len = Math.sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 
-			if(!makeNew)
+		/**
+		 * Find the square of the length of a vector. To save
+		 * doing a square root if it is needed for some physical
+		 * calculation.
+		 *
+		 * @param v A vector.
+		 */	
+		lengthSquared: function(v) {
+			return v.x * v.x + v.y * v.y + v.z * v.z;
+		},
+				
+		/**
+		 * Normalize a vector (give it length of 1 unit).
+		 *
+		 * @param v A vector.
+		 * @param clone Whether to operate on v or a cloned vector.
+		 */	
+		normalize: function(v, clone) {
+			var len = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+
+			if(!clone)
 			{
 				if(len) {
-					vec.x /= len;
-					vec.y /= len;
-					vec.z /= len;
+					v.x /= len;
+					v.y /= len;
+					v.z /= len;
 				}
 
-				return vec;			
+				return v;			
 			}
 			else
 			{
 				if(len)
 				{
-					return {"x": vec.x / len, "y": vec.y / len, "z": vec.z / len};
+					return {"x": v.x / len, "y": v.y / len, "z": v.z / len};
 				}
 				else
 				{
@@ -210,108 +247,79 @@ var physii = physii || {};
 			}
 		},
 				
-		setLengthXY: function(vec, val, makeNew) {
-			var z = vec.z; 
 
-			if(makeNew)
+		/**
+		 * Rotate a vector in 2 dimensions leaving the value of the other 
+		 * dimension in tact.
+		 *
+		 * Example:
+		 *
+		 * rotate2D(v, 'x', 'y', 'z', Math.PI / 2);
+		 * This will rotate the vector from +ve x to +ve y.
+		 * There will be no change in the z of the vector.
+		 *
+		 * rotate2D(v, 'y', 'x', 'z', Math.PI / 2);
+		 * This will rotate the vector from +ve y to +ve x (the
+		 * opposite direction from the above example.
+		 *
+		 * @param v A vector.
+		 * @param toAxis Defines the +ve "to" axis of the clockwise rotation.
+		 * @param fromAxis Defines the +ve "from" axis of the clockwise rotation.
+		 * @param angle Angle to rotate by.
+		 * @param clone Whether to operate on v or a cloned vector.
+		 * @returns Either v or a clone with the operation applied.
+		 */
+		rotate2D: function(v, fromAxis, toAxis, otherAxis, angle, clone) {
+			var c = Math.cos(angle);
+			var s = Math.sin(angle);
+
+			var fromAxisVal = v[fromAxis] * c - v[toAxis] * s; 
+			var toAxisVal = v[fromAxis] * s - v[toAxis] * c; 
+
+			if(clone)
 			{
-				return my.scale(my.normalize(my.flattenZ(vec, true), val));
+				var vClone = {};
+				vClone[fromAxis] = fromAxisVal;
+				vClone[toAxis] = toAxisVal;
+				vClone[otherAxis] = v[otherAxis];
+				return vClone;
 			}
 			else
 			{
-				my.scale(my.normalize(my.flattenZ(vec)), val);
-				vec.z = z;
-				return vec;
+				v[fromAxis] = fromAxisVal;
+				v[toAxis] = toAxisVal;
+				v[otherAxis] = v[otherAxis];
+				return v;
 			}
 		},
-				
-		getLengthXY: function(vec) { 
-			return my.length(my.flattenZ(vec, true));
-		},
-				
-		directionXY: function(vec) {
-			if(vec.y >= 0)
+
+		/**
+		 * Find the angle from an axis ignoring one component 
+		 * of a vector.
+		 *
+		 * Example: direction2D(v, 'x', 'y');
+		 *
+		 * This will tell you the angle between the vector and 
+		 * the +ve x-axis in the direction of the +ve y-axis.
+		 *
+		 * y,z will go from +ve y to +ve z
+		 * x,z will go from +ve x to +ve z
+		 *
+		 * Reversing from and to gives the same result.
+		 *
+		 * @returns angle from 0 -> 2pi
+		 */
+		direction2D: function(v, fromAxis, toAxis)
+		{
+			if(v[toAxis] >= 0)
 			{
-				return Math.atan2(vec.y, vec.x);
+				return Math.atan2(v[toAxis], v[fromAxis]);
 			}
 			else
 			{
-				return (Math.PI + Math.atan2(vec.y, vec.x)) + Math.PI;
-			}
-
-			return direction;
-		},
-				
-		directionXZ: function(vec) { 
-			if(vec.z >= 0)
-			{
-				return Math.atan2(vec.z, vec.x);
-			}
-			else
-			{
-				return (Math.PI + Math.atan2(vec.z, vec.x)) + Math.PI;
-			}
-
-			return direction;
-		},
-
-		rotateXY: function(vec, angle, makeNew) {
-			var x = vec.x;
-			var y = vec.y;
-
-			var cosVal = Math.cos(angle);
-			var sinVal = Math.sin(angle);
-
-			if(!makeNew)
-			{
-				vec.x = x * cosVal - y * sinVal;
-				vec.y = x * sinVal + y * cosVal;	
-				return vec;
-			}
-			else
-			{
-				return {"x": x * cosVal - y * sinVal, "y": x * sinVal + y * cosVal, "z": vec.z};	
+				return 2 * Math.PI + Math.atan2(v[toAxis], v[fromAxis]);
 			}
 		},
-				
-		rotateXZ: function(vec, angle, makeNew) {
-			var x = vec.x;
-			var z = vec.z;
-
-			var cosVal = Math.cos(angle);
-			var sinVal = Math.sin(angle);
-
-			if(!makeNew)
-			{
-				vec.x = x * cosVal - z * sinVal;
-				vec.z = x * sinVal + z * cosVal;	
-				return vec;
-			}
-			else
-			{
-				return {"x": x * cosVal - z * sinVal, "y": vec.y, "z": x * sinVal + z * cosVal};
-			}
-		},
-
-		rotateYZ: function(vec, angle, makeNew) {
-			var y = vec.y;
-			var z = vec.z;
-
-			var cosVal = Math.cos(angle);
-			var sinVal = Math.sin(angle);
-
-			if(!makeNew)
-			{
-				vec.y = y * cosVal - z * sinVal;
-				vec.z = y * sinVal + z * cosVal;	
-				return vec;
-			}
-			else
-			{
-				return {"x": vec.x, "y": y * sinVal + z * cosVal, "z": y * cosVal - z * sinVal};
-			}
-		},
-
 		/**
 		 * Finds the direction from one vec to another rotating
 		 * around the z axis.
@@ -454,12 +462,36 @@ var physii = physii || {};
 				return newVec;
 			}
 		},
-				
+
 		/**
 		 * Get a string representation of this vector.
 		 */
-		toString: function(vec) {
-			return '(' + vec.x.toFixed(3) + ',' + vec.y.toFixed(3) + ',' + vec.z.toFixed(3) + ')';
+		toString: function(v, decimals) 
+		{
+			decimals = decimals || 2;
+			return '(' + [
+				v.x.toFixed(decimals), 
+				v.y.toFixed(decimals),
+				v.z.toFixed(decimals)
+			].join(',') + ')';
+		},
+
+		/**
+		 * Compare two vectors for equality.
+		 *
+		 * @param v1 A vector.
+		 * @param v2 Another vector.
+		 * @param precision Precision (defaults to this.precision)
+		 */
+		equal: function(v1, v2, precision)
+		{
+			precision = precision || my.precision;
+debugger; 
+			var x = Math.abs(v2.x - v1.x);
+			var y = Math.abs(v2.y - v1.y);
+			var z = Math.abs(v2.z - v1.z);
+
+			return (x < precision && y < precision && z < precision)
 		},
 
 		/**
@@ -534,91 +566,6 @@ var physii = physii || {};
 		clone: function(vec) {
 			return {"x": vec.x, "y": vec.y, "z": vec.z};
 		},
-
-		/**
-		 * See if one component of a vector is the same as another
-		 * to within a precision.
-		 *
-		 * @param vec 1st vector.
-		 * @param vVec 2nd vector.
-		 * @param axis (x|y|z) String representing the axis.
-		 * @param precision Precision to use. Defaults to this.precision.
-		 *
-		 * @returns boolean If the component is equal to within precision.
-		 */
-		axisEquals: function(vec, vVec, axis, precision) {
-			var precision = precision || my.precision;
-
-			return Math.abs(vec[axis] - vVec[axis]) < precision;
-		},
-
-		/**
-		 * See if a vector is the same as another to within a precistion.
-		 *
-		 * @param vec 1st vector.
-		 * @param vVec 2nd vector.
-		 * @param precision Precision to use. Defaults to this.precision.
-		 *
-		 * @returns boolean If the component is equal to within precision.
-		 */
-		equals: function(vec, vVec, precision) {
-			return 
-				vec.axisEquals(vVec, 'x', precision) && 
-				vec.axisEquals(vVec, 'y', precision) && 
-				vec.axisEquals(vVec, 'z', precision);
-		},
-
-		/**
-		 * This puts a point on the opposite side of rectangle
-		 * by changing both the x and y components.
-		 */
-		flipPointX: function(vPoint, vBounds, makeNew) {
-			if(makeNew)
-			{
-				return my.create(vBounds.x - vPoint.x, vBounds.y - vPoint.y, vPoint.z);
-			}
-			else
-			{
-				vPoint.x = vBounds.x - vPoint.x;
-				vPoint.y = vBounds.y - vPoint.y;
-			}
-		},
-
-		/**
-		 * This function tells you what perpendicular acceleration is required
-		 * to deviate a path by a given angle at a given distance.
-		 * 
-		 * The length of vVel is used purely to get the speed. Distance is 
-		 * to be in the direction of the velocity.
-		 * 
-		 * There will be a divide by 0 error if vVel is 0 or d is 0.
-		 */
-		angleToAccel: function(vVel, d, targetAngle) {
-			var div = d / my.length(vVel);
-			return (2 * d * Math.tan(targetAngle) ) / (div * div);
-		},
-
-		/**
-		 * Change a vector into a different xy coord system.
-		 */
-		toLocalXY: function(vLocalOrigin, vLocalDirection, v, isVelocity, makeNew) {
-			var vToChange = v;
-			if(makeNew)
-			{
-				vToChange = my.clone(v);
-			}
-			
-			if(!isVelocity)
-			{
-				my.sub(vToChange, vLocalOrigin);			
-			}
-
-			var direction = my.directionXY(vLocalDirection);
-
-			my.rotateXY(vToChange, -direction); 
-			
-			return vToChange;
-		}
 	};
 
 	var my = p.vector;

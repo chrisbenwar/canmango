@@ -24,4 +24,8 @@ var canmango = canmango || {};
 	canmangoControllers.controller('ShapinSafariCtrl', function($scope) {
 			$scope.$on('$viewContentLoaded', canmango.shapinSafari.init());
 	});
+
+	canmangoControllers.controller('RoomCtrl', function($scope) {
+			$scope.$on('$viewContentLoaded', canmango.room.init());
+	});
 })(canmango);

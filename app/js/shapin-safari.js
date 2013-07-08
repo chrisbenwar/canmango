@@ -6,6 +6,9 @@ var canmango = canmango || {};
 		_canvas: null,
 		_ui: null,
 		_editor: null,
+		_imageLoader: null,
+		_room: null,
+
 		_defaultDesign: {
 			elems: [
 				{
@@ -22,7 +25,6 @@ var canmango = canmango || {};
 				}
 			]
 		},
-		_imageLoader: null,
 
 		save: function()
 		{
@@ -37,10 +39,10 @@ var canmango = canmango || {};
 		{
 			var designs = amplify.store();
 			var imgDataURL = null, design = null;
-			var $designsElem = $('#designs');
+			var image = null;
 			
-			var designsHTML = '';
-			
+			my._room.clear();
+
 			for(var canvasID in designs)
 			{
 				design = designs[canvasID];
@@ -49,10 +51,14 @@ var canmango = canmango || {};
 				tempCanvas.style.display = 'block';
 				imgDataURL = my._imageLoader.toDataURL(); 
 				tempCanvas.style.display = 'none';
-				designsHTML += '<img src="' + imgDataURL + '" />';
-			}
+				image = new Image();
+				image.src = imgDataURL;
 
-			$designsElem.html(designsHTML);
+				var randX = Math.floor(Math.random() * my._room.width);
+				var randY = Math.floor(Math.random() * my._room.height);
+
+				my._room.addImage(canvasID, image, {x: randX, y: randY});
+			}
 		},
 
 		updateHandles: function(shapeID, ignoreID)
@@ -96,6 +102,9 @@ var canmango = canmango || {};
 
 			my._ui = cm.shaperUI;
 			my._ui.init('canmangoCanvasOverlay');
+
+			my._room = cm.room;
+			my._room.init('designs');
 
 			var shapes = my._editor.getShapes();
 			var shape = shapes['rect'];
