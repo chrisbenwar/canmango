@@ -28,4 +28,11 @@ var canmango = canmango || {};
 	canmangoControllers.controller('RoomCtrl', function($scope) {
 			$scope.$on('$viewContentLoaded', canmango.room.init());
 	});
+
+	canmangoControllers.controller('WalkaboutCtrl', function($scope) {
+			var drawer = cm.walkabout;
+			cm.shapespasm.setDrawer(drawer);
+
+			$scope.$on('$viewContentLoaded', canmango.shapespasm.init);
+	});
 })(canmango);

@@ -8,9 +8,6 @@ var physii = physii || {};
 	 * Vectors are stored in format {"x": xVal, "y": yVal, "z": zVal}
 	 *
 	 * This is not well tested or production ready.
-	 *
-	 * Based on Physics for Game Developers by David M Bourg but 
-	 * with a few extra treats thrown in.
 	 */
 	p.vector = 
 	{

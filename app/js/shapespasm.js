@@ -18,14 +18,19 @@ var canmango = canmango || {};
 			my.width = my.stage.canvas.width;
 			my.height = my.stage.canvas.height;
 
+			if(my.drawer && my.drawer.init)
+			{
+				my.drawer.init(my);
+			}
+
 			my.draw();
 		},
 		draw: function() {
 			my.stage.removeAllChildren();
 
 			var container = new createjs.Container();
-			var w = 300;
-			var h = 300;
+			var w = 400;
+			var h = 400;
 
 			if(my.drawer) {
 				my.drawer.draw(container, w, h);

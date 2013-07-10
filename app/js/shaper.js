@@ -1709,7 +1709,7 @@ var shape = function(properties) {
 			var vProj = vec.projection(vCurveNormal, vFromMidPoint);
 
 			var curve = vec.length(vProj);
-			if(vec.angleTo(vCurveNormal, vFromMidPoint) > Math.PI / 2)
+			if(vec.angleBetween(vCurveNormal, vFromMidPoint) > Math.PI / 2)
 			{
 				curve = -curve;
 			}

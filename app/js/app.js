@@ -26,5 +26,9 @@ canmangoApp.config(['$routeProvider', function($routeProvider) {
 		{templateUrl: 'partials/shapin-safari.html', controller: 'ShapinSafariCtrl'}
 	);
 
+	$routeProvider.when('/walkabout', 
+		{templateUrl: 'partials/walkabout.html', controller: 'WalkaboutCtrl'}
+	);
+
 	$routeProvider.otherwise({redirectTo: '/home'});
 }]);
