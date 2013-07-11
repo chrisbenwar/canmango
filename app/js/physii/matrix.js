@@ -69,25 +69,25 @@ var physii = physii || {};
 		 */
 		lookAt: function(vEye, vTarget, vUp)
 		{
-			var zaxis = vec.normalize(vec.sub(vTarget, vEye, true), true);    // The "look-at" vector.
+			var zaxis = vec.normalize(vec.sub(vEye, vTarget, true), true);    // The "look-at" vector.
 			var xaxis = vec.normalize(vec.cross(vUp, zaxis, true), true);// The "right" vector.
 			var yaxis = vec.cross(zaxis, xaxis, true);     // The "up" vector.
 	 
 			// Create a 4x4 orientation matrix from the right, up, and at vectors
-			/**
 			var mOrientation = [
 					[xaxis.x, yaxis.x, zaxis.x, 0],
 					[xaxis.y, yaxis.y, zaxis.y, 0],
 					[xaxis.z, yaxis.z, zaxis.z, 0],
 					[	0,       0,       0,     1]
 			];
-			*/
+			/*
 			var mOrientation = [
 					[xaxis.x, xaxis.y, xaxis.z, 0],
 					[yaxis.x, yaxis.y, yaxis.z, 0],
 					[zaxis.x, zaxis.y, zaxis.z, 0],
 					[	0,       0,       0,     1]
 			];
+			*/
 			 
 			// Create a 4x4 translation matrix by negating the eye position.
 			var mTranslation = [
@@ -96,10 +96,20 @@ var physii = physii || {};
 						[0,      0,      1,     0],
 					[-vEye.x, -vEye.y, -vEye.z,  1]
 			];
+
+			/*
+			var mTranslation = [
+						[1,      0,      0,     -vEye.x],
+						[0,      1,      0,     -vEye.y], 
+						[0,      0,      1,     -vEye.z],
+					[0, 0, 0,  1]
+			];
+			*/
 	 
 			// Combine the orientation and translation to compute the view matrix
-			return ( my.mul(mOrientation,mTranslation) );
-			//return ( my.mul(mTranslation,mOrientation) );
+			//return ( my.mul(mOrientation,mTranslation) );
+			//return mOrientation;
+			return ( my.mul(mTranslation,mOrientation) );
 		},
 		perspective: function(left, right, bottom, top, near, far)
     {
@@ -110,8 +120,80 @@ var physii = physii || {};
 				[0, 0, -1, 0]
 			];
 
+
 			return mPerspective;
-    }
+    },
+		perspective2: function(near, far, fov)
+		{
+			var scale = 1 / Math.tan(vec.degToRad(fov * 0.5));
+
+			var mP = [
+				[scale, 0, 0, 0],
+				[0, scale, 0, 0],
+				[0, 0, - far / (far - near), - far * near / (far - near)], 
+				[0, 0, -1, 0] 
+			];
+			return mP
+		},
+		makeFrustum: function ( left, right, bottom, top, near, far ) {
+
+			var m, x, y, a, b, c, d;
+
+			x = 2 * near / ( right - left );
+			y = 2 * near / ( top - bottom );
+
+			a = ( right + left ) / ( right - left );
+			b = ( top + bottom ) / ( top - bottom );
+			c = - ( far + near ) / ( far - near );
+			d = - 2 * far * near / ( far - near );
+
+			/*
+			var mP = [
+				[x, 0, a, 0],
+				[0, y, b, 0],
+				[0, 0, c, d],
+				[0, 0, -1, 0],
+			];
+			*/
+
+			var mP = [
+				[x, 0, 0, 0],
+				[0, y, 0, 0],
+				[a, b, c, -1],
+				[0, 0, d, 0],
+			];
+
+			return mP;
+		},
+		makePerspective: function ( fov, aspect, near, far ) {
+			var ymax, ymin, xmin, xmax;
+
+			ymax = near * Math.tan( fov * Math.PI / 360 );
+			ymin = - ymax;
+			xmin = ymin * aspect;
+			xmax = ymax * aspect;
+
+			return my.makeFrustum( xmin, xmax, ymin, ymax, near, far );
+		},
+		swapRowsAndCols: function(m)
+		{
+			var dimension = m.length;
+			var mOut = [];
+			for(var i = 0; i < dimension; i++)
+			{
+				mOut.push([]);
+			}
+
+			for(var i = 0; i < m.length; i++)
+			{
+				for(var j = 0; j < m[i].length; j++)
+				{
+					mOut[j][i] = m[i][j];
+				}
+			}
+
+			return mOut;
+		}
 	};
 
 	var my = p.matrix;

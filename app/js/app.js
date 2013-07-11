@@ -30,5 +30,9 @@ canmangoApp.config(['$routeProvider', function($routeProvider) {
 		{templateUrl: 'partials/walkabout.html', controller: 'WalkaboutCtrl'}
 	);
 
+	$routeProvider.when('/threeworld', 
+		{templateUrl: 'partials/threeworld.html', controller: 'ThreeWorldCtrl'}
+	);
+
 	$routeProvider.otherwise({redirectTo: '/home'});
 }]);

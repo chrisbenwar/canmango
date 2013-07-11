@@ -51,7 +51,6 @@ test('matrix mulVec', function() {
 
 	var v = [2, 3, 4];
 
-	debugger; 
 	var res = matrix.mulVec(m, v);
 
 	ok(
@@ -59,18 +58,65 @@ test('matrix mulVec', function() {
 		"vec mul values correct" +
 		JSON.stringify(res)
 	);
+
+	m = [
+		[1, 0, 0, 10],
+		[0, 1, 0, 0],
+		[0, 0, 1, 0],
+		[0, 0, 0, 1]
+	];
+
+	v = [10, 10, 10, 1];
+
+	res = matrix.mulVec(m, v);
+
+	ok(res[0] == 20 && res[1] == 10 && res[2] == 10 && res[3] == 1,
+			"simple vec translation" +
+			JSON.stringify(res)
+	);
+
+	m = [
+		[2, 0, 0, 0],
+		[0, 2, 0, 0],
+		[0, 0, 2, 0],
+		[0, 0, 0, 1],
+	];
+
+	v = [10, 10, 10, 1];
+
+	res = matrix.mulVec(m, v);
+
+	ok(res[0] == 20 && res[1] == 20 && res[2] == 20 && res[3] == 1,
+			"simple vec scale" +
+			JSON.stringify(res)
+	);
+}); 
+
+test('matrix swapRowsAndColumns', function() {
+	var m = [
+		[1,2,3],
+		[4,5,6],
+		[7,8,9],
+	];	
+
+	res = matrix.swapRowsAndCols(m);
+
+	ok(
+		res[0][1] == 4 && res[1][2] == 8 && res[2][1] == 6,
+		"Swapping rows and cols" + JSON.stringify(res)	
+	);
 }); 
 
 test('camera lookAt', function() {
 	var vEye = vec.create(0, 10, 0);
 	var vTarget = vec.create(0, 0, 0);
-	var vUp = vec.create(0, 0, 1);
+	var vUp = vec.create(0, 1, 0);
 	var mCam = matrix.lookAt(vEye, vTarget, vUp);
 
 	console.log( JSON.stringify(mCam) );
-	var v = [0, 0, 10, 1];
+	var v = [0, 0, -2, 1]; 
 	
-	var res = matrix.mulVec(mCam, v);
+	var res = matrix.mulVec(matrix.swapRowsAndCols(mCam), v);
 
 	ok(
 		res[0] == 0 && res[1] == 10 && res[2] == 0,
@@ -78,9 +124,9 @@ test('camera lookAt', function() {
 		JSON.stringify(res)
 	);
 
-	v = [2, 0, 2, 1];
+	v = [2, 0, -2, 1];
 
-	var res = matrix.mulVec(mCam, v);
+	var res = matrix.mulVec(matrix.swapRowsAndCols(mCam), v);
 
 	ok(
 		res[0] == 2 && res[1] == 2 && res[2] == 0,

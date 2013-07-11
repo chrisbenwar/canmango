@@ -35,4 +35,8 @@ var canmango = canmango || {};
 
 			$scope.$on('$viewContentLoaded', canmango.shapespasm.init);
 	});
+
+	canmangoControllers.controller('ThreeWorldCtrl', function($scope) {
+			$scope.$on('$viewContentLoaded', canmango.threeworld.init);
+	});
 })(canmango);

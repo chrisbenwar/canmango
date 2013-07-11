@@ -46,19 +46,19 @@ var canmango = canmango || {};
 
 		addRects: function()
 		{
-			my._worldData.push(my.createRect(0, 0, 50, 400, 20));
+			my._worldData.push(my.createRect(0, 280, 20, 340, 20));
 			my._worldData.push(my.createRect(0, 50, 50, 90, 80));
-			my._worldData.push(my.createRect(0, 200, 50, 240, 200));
+			my._worldData.push(my.createRect(0, 200, 150, 240, 200));
 		},
 
 		createRect: function(top, left, bottom, right, depth)
 		{
 			return [
-				{x: top, y: left, z: depth}, 
-				{x: top, y: right, z: depth},
-				{x: bottom, y: right, z: depth},
-				{x: bottom, y: left, z: depth},
-				{x: top, y: left, z: depth} 
+				{x: left, y: top, z: depth}, 
+				{x: right, y: top, z: depth},
+				{x: right, y: bottom, z: depth},
+				{x: left, y: bottom, z: depth},
+				{x: left, y: top, z: depth} 
 			];
 		},
 
@@ -69,12 +69,17 @@ var canmango = canmango || {};
 			var from = null;
 			var to = null;
 
-			var vEye = vec.create(0, 50, -50);
-			var vTarget = vec.create(0, 0, 0);
-			var vUp = vec.create(0, 0, 1);
+			var vEye = vec.create(200, 50, -150);
+			var vTarget = vec.create(200, 0, 0);
+			var vUp = vec.create(0, 1, 0);
 
 			var mCamera = matrix.lookAt(vEye, vTarget, vUp)
-			var eye = vec.create(200, 50, -50);
+			var aspect = my._width / my._height;
+			var mP = matrix.makePerspective(90, aspect, 1, 1000);
+			console.log( JSON.stringify(['mP', mP]));
+			var mFin = matrix.mul(
+					matrix.swapRowsAndCols(mP), matrix.swapRowsAndCols(mCamera));
+			//mFin = matrix.swapRowsAndCols(mFin);
 
 			for(var i = 0; i < my._worldData.length; i++)
 			{
@@ -87,21 +92,27 @@ var canmango = canmango || {};
 						if(item[j + 1])
 						{
 							var vFromArr = vec.toArray(item[j]);
-							vFromArr[3] = 0;
+							vFromArr[3] = 1;
 							var vToArr = vec.toArray(item[j + 1]);
-							vToArr[3] = 0;
-							from = matrix.mulVec(mCamera, vFromArr);
-							var fromArr = vec.fromArray(from);
-							fromArr.x = (eye.z * (fromArr.x-eye.x)) / (eye.z + fromArr.z) + eye.x;
-							fromArr.y = (eye.z * (fromArr.y-eye.y)) / (eye.z + fromArr.z) + eye.y;
-							console.log(JSON.stringify([item[j], from]));
-							to = matrix.mulVec(mCamera, vToArr);
-							var toArr = vec.fromArray(to);
-							toArr.x = (eye.z * (toArr.x-eye.x)) / (eye.z + toArr.z) + eye.x;
-							toArr.y = (eye.z * (toArr.y-eye.y)) / (eye.z + toArr.z) + eye.y;
-							console.log(JSON.stringify([item[j + 1], to]));
+							vToArr[3] = 1;
 
-							my.drawLine(stage, g, fromArr, toArr);
+							from = matrix.mulVec(mFin, vFromArr);
+							from[0] /= from[3]; 
+							from[1] /= from[3]; 
+							from[2] /= from[3]; 
+							from[3] /= from[3]; 
+							var vFrom = vec.fromArray(from);
+							console.log(JSON.stringify([item[j], vFrom]));
+
+							to = matrix.mulVec(mFin, vToArr);
+							to[0] /= to[3]; 
+							to[1] /= to[3]; 
+							to[2] /= to[3]; 
+							to[3] /= to[3]; 
+							var vTo = vec.fromArray(to);
+							console.log(JSON.stringify([item[j + 1], vTo]));
+
+							my.drawLine(stage, g, vFrom, vTo);
 						}
 					}
 				}
@@ -112,10 +123,17 @@ var canmango = canmango || {};
 
 		drawLine: function(stage, g, from, to)
 		{
+			var h = my._height - 200;
+			var w = my._width - 200;
+			var midX = my._width / 2;
+			var midY = my._height / 2;
 			g.beginStroke('black');
 			g.setStrokeStyle(1);
-			g.moveTo(from.x, my._height - from.y - 1);
-			g.lineTo(to.x, my._height - to.y - 1);
+			console.log( JSON.stringify([from.y, h - from.y]));
+
+			g.moveTo(from.x * w + midX, h - from.y * h);
+			g.lineTo(to.x * w + midX, h - to.y * h);
+
 			g.endStroke();
 		},
 
