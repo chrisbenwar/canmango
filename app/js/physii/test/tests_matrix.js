@@ -110,16 +110,16 @@ test('matrix swapRowsAndColumns', function() {
 test('camera lookAt', function() {
 	var vEye = vec.create(0, 10, 0);
 	var vTarget = vec.create(0, 0, 0);
-	var vUp = vec.create(0, 1, 0);
+	var vUp = vec.create(0, 0, 1);
 	var mCam = matrix.lookAt(vEye, vTarget, vUp);
 
 	console.log( JSON.stringify(mCam) );
-	var v = [0, 0, -2, 1]; 
+	var v = [0, 2, -2, 1]; 
 	
 	var res = matrix.mulVec(matrix.swapRowsAndCols(mCam), v);
 
 	ok(
-		res[0] == 0 && res[1] == 10 && res[2] == 0,
+		res[0] == 0 && res[1] == -2 && res[2] == -8,
 		"Vertex rotated using camera." +
 		JSON.stringify(res)
 	);
@@ -129,7 +129,7 @@ test('camera lookAt', function() {
 	var res = matrix.mulVec(matrix.swapRowsAndCols(mCam), v);
 
 	ok(
-		res[0] == 2 && res[1] == 2 && res[2] == 0,
+		res[0] == -2 && res[1] == -2 && res[2] == -10,
 		"Vertex rotated using camera." +
 		JSON.stringify(res)
 	);

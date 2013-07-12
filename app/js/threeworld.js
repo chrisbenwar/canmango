@@ -40,11 +40,11 @@ var canmango = canmango || {};
 			my.scene = new THREE.Scene();
 			my.scene.add(my.camera);
 
-			my.camera.position.z = -150;
-			my.camera.position.y = 50;
+			my.camera.position.z = 0;
+			my.camera.position.y = 400;
 			my.camera.position.x = 200;
 
-			my.camera.up = new THREE.Vector3( 0, 1, 0 );
+			my.camera.up = new THREE.Vector3( 1, 0, 0 );
 			my.camera.lookAt(new THREE.Vector3(200, 0, 0));
 
 			my.renderer.setSize(my._width, my._height);

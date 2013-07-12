@@ -4,6 +4,7 @@ var canmango = canmango || {};
 (function(cm) {
 	var vec = physii.vector;
 	var matrix = physii.matrix;
+	var ui = futilitybelt.ui;
 
 	cm.walkabout = {
 		_canvas: null,
@@ -13,6 +14,9 @@ var canmango = canmango || {};
 		_worldData: [],
 		_worldWidth: 400,
 		_worldHeight: 400,
+
+		_z: 200,
+		_x: 200,
 		
 		init: function(shapespasm)
 		{
@@ -21,6 +25,41 @@ var canmango = canmango || {};
 			my.addGuides();	
 
 			my.addRects();
+
+			var interval = 100;
+			var speed = 2;
+
+			var fwd = new ui.RepeatButton( ui.getElem('camFwd'), 
+				function() {
+					(cm.walkabout._z) -= speed;	
+					cm.shapespasm.draw();	
+				},
+				interval
+			);
+
+			var bwd = new ui.RepeatButton( ui.getElem('camBwd'), 
+				function() {
+					(cm.walkabout._z) += speed;	
+					cm.shapespasm.draw();	
+				},
+				interval
+			);
+
+			var right = new ui.RepeatButton( ui.getElem('camRight'), 
+				function() {
+					(cm.walkabout._x) -= speed;	
+					cm.shapespasm.draw();	
+				},
+				interval
+			);
+
+			var left = new ui.RepeatButton( ui.getElem('camLeft'), 
+				function() {
+					(cm.walkabout._x) += speed;	
+					cm.shapespasm.draw();	
+				},
+				interval
+			);
 		},
 
 		addGuides: function()
@@ -46,9 +85,9 @@ var canmango = canmango || {};
 
 		addRects: function()
 		{
-			my._worldData.push(my.createRect(0, 280, 20, 340, 20));
-			my._worldData.push(my.createRect(0, 50, 50, 90, 80));
-			my._worldData.push(my.createRect(0, 200, 150, 240, 200));
+			my._worldData.push(my.createRect(20, 280, 0, 340, 20));
+			my._worldData.push(my.createRect(50, 50, 0, 90, 80));
+			my._worldData.push(my.createRect(150, 200, 0, 240, 200));
 		},
 
 		createRect: function(top, left, bottom, right, depth)
@@ -69,17 +108,18 @@ var canmango = canmango || {};
 			var from = null;
 			var to = null;
 
-			var vEye = vec.create(200, 50, -150);
-			var vTarget = vec.create(200, 0, 0);
+			var vEye = vec.create(this._x, 50, this._z);
+			var vTarget = vec.create(this._x, 0, this._z - 200);
 			var vUp = vec.create(0, 1, 0);
 
 			var mCamera = matrix.lookAt(vEye, vTarget, vUp)
 			var aspect = my._width / my._height;
 			var mP = matrix.makePerspective(90, aspect, 1, 1000);
-			console.log( JSON.stringify(['mP', mP]));
+			var mO = matrix.makeOrthographic(-200, 200, 200, -200, 1, 1000);
 			var mFin = matrix.mul(
-					matrix.swapRowsAndCols(mP), matrix.swapRowsAndCols(mCamera));
-			//mFin = matrix.swapRowsAndCols(mFin);
+				matrix.swapRowsAndCols(mP), 
+				matrix.swapRowsAndCols(mCamera)
+			);
 
 			for(var i = 0; i < my._worldData.length; i++)
 			{
@@ -93,8 +133,10 @@ var canmango = canmango || {};
 						{
 							var vFromArr = vec.toArray(item[j]);
 							vFromArr[3] = 1;
+							vFromArr[2] = -vFromArr[2];
 							var vToArr = vec.toArray(item[j + 1]);
 							vToArr[3] = 1;
+							vToArr[2] = -vToArr[2];
 
 							from = matrix.mulVec(mFin, vFromArr);
 							from[0] /= from[3]; 
@@ -102,7 +144,6 @@ var canmango = canmango || {};
 							from[2] /= from[3]; 
 							from[3] /= from[3]; 
 							var vFrom = vec.fromArray(from);
-							console.log(JSON.stringify([item[j], vFrom]));
 
 							to = matrix.mulVec(mFin, vToArr);
 							to[0] /= to[3]; 
@@ -110,7 +151,6 @@ var canmango = canmango || {};
 							to[2] /= to[3]; 
 							to[3] /= to[3]; 
 							var vTo = vec.fromArray(to);
-							console.log(JSON.stringify([item[j + 1], vTo]));
 
 							my.drawLine(stage, g, vFrom, vTo);
 						}
@@ -129,7 +169,6 @@ var canmango = canmango || {};
 			var midY = my._height / 2;
 			g.beginStroke('black');
 			g.setStrokeStyle(1);
-			console.log( JSON.stringify([from.y, h - from.y]));
 
 			g.moveTo(from.x * w + midX, h - from.y * h);
 			g.lineTo(to.x * w + midX, h - to.y * h);
