@@ -2,6 +2,7 @@
 var canmango = canmango || {};
 
 (function(cm) {
+
 	cm.shapinSafari = {
 		_canvas: null,
 		_ui: null,
@@ -24,6 +25,16 @@ var canmango = canmango || {};
 					lineWidth: 0.05
 				}
 			]
+		},
+
+		clear: function()
+		{
+			var designs = amplify.store();
+
+			for(var designID in designs)
+			{
+				amplify.store(designID, null);
+			}
 		},
 
 		save: function()
@@ -59,6 +70,7 @@ var canmango = canmango || {};
 
 				my._room.addImage(canvasID, image, {x: randX, y: randY});
 			}
+			my._room.arrange();
 		},
 
 		updateHandles: function(shapeID, ignoreID)
@@ -182,6 +194,9 @@ var canmango = canmango || {};
 			}
 
 			my.draw();
+
+			//my.clear();
+			my.loadSaved();
 		},
 
 		draw: function() {

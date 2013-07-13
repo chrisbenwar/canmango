@@ -47,7 +47,7 @@ var canmango = canmango || {};
 
 			var right = new ui.RepeatButton( ui.getElem('camRight'), 
 				function() {
-					(cm.walkabout._x) -= speed;	
+					(cm.walkabout._x) += speed;	
 					cm.shapespasm.draw();	
 				},
 				interval
@@ -55,7 +55,7 @@ var canmango = canmango || {};
 
 			var left = new ui.RepeatButton( ui.getElem('camLeft'), 
 				function() {
-					(cm.walkabout._x) += speed;	
+					(cm.walkabout._x) -= speed;	
 					cm.shapespasm.draw();	
 				},
 				interval
@@ -111,11 +111,11 @@ var canmango = canmango || {};
 			var vEye = vec.create(this._x, 50, this._z);
 			var vTarget = vec.create(this._x, 0, this._z - 200);
 			var vUp = vec.create(0, 1, 0);
-
 			var mCamera = matrix.lookAt(vEye, vTarget, vUp)
+
 			var aspect = my._width / my._height;
 			var mP = matrix.makePerspective(90, aspect, 1, 1000);
-			var mO = matrix.makeOrthographic(-200, 200, 200, -200, 1, 1000);
+
 			var mFin = matrix.mul(
 				matrix.swapRowsAndCols(mP), 
 				matrix.swapRowsAndCols(mCamera)

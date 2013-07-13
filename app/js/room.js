@@ -2,6 +2,11 @@
 var canmango = canmango || {};
 
 (function(cm) {
+	var vec = physii.vector;
+	var matrix = physii.matrix;
+	var logger = futilitybelt.dev.logger;
+	var ui = futilitybelt.ui;
+
 	/**
 	 * A 3d image gallery using easel js.
 	 */
@@ -10,6 +15,10 @@ var canmango = canmango || {};
 		width: null,
 		height: null,
 		images: {},
+		world: [],
+		_x: 0,
+		_y: 100,
+		_z: 500,
 
 		/**
 		 * Initialize the gallery by creating an
@@ -22,11 +31,69 @@ var canmango = canmango || {};
 		{
 			my.stage = new createjs.Stage(canvasID);
 			my.container = new createjs.Container();
-			my.stage.addChild(my.container);
-
 			my.width = my.stage.canvas.width;
 			my.height = my.stage.canvas.height;
 
+
+			var interval = 100;
+			var speed = 2;
+
+			var g = new createjs.Graphics();
+			g.beginFill('#bbddff');
+			g.drawRect(0, 0, my.width, my.height);
+			my.dragger = new createjs.Shape(g);
+			my.stage.addChild(my.dragger);
+
+			my.dragger.addEventListener("mousedown", function(evt) {
+				//var offset = {x:evt.target.x-evt.stageX, y:evt.target.y-evt.stageY};
+				var startX = evt.stageX;
+				var startY = evt.stageY;
+                 
+				// add a handler to the event object's onMouseMove callback
+				// this will be active until the user releases the mouse button:
+				evt.addEventListener("mousemove",function(ev) {
+					var diffX = ev.stageX - startX;
+					var diffY = ev.stageY - startY;
+					cm.room._x -= diffX;
+					cm.room._z += diffY;
+					cm.room.arrange();
+				});
+			});
+
+			my.stage.addChild(my.container);
+			my.createGuides();
+
+			var fwd = new ui.RepeatButton( ui.getElem('camFwd'), 
+				function() {
+					(cm.room._z) -= speed;	
+					cm.room.arrange();	
+				},
+				interval
+			);
+
+			var bwd = new ui.RepeatButton( ui.getElem('camBwd'), 
+				function() {
+					(cm.room._z) += speed;	
+					cm.room.arrange();	
+				},
+				interval
+			);
+
+			var right = new ui.RepeatButton( ui.getElem('camRight'), 
+				function() {
+					(cm.room._x) += speed;	
+					cm.room.arrange();	
+				},
+				interval
+			);
+
+			var left = new ui.RepeatButton( ui.getElem('camLeft'), 
+				function() {
+					(cm.room._x) -= speed;	
+					cm.room.arrange();	
+				},
+				interval
+			);
 		},
 
 		createGuides: function(options)
@@ -36,10 +103,20 @@ var canmango = canmango || {};
 
 			for(var i = 0; i < numGuides; i++)
 			{
+				var z = (1000 / 10) * i;
 				var guide = my.createGuide();
-				guide.y = my.height / 10 * i;
+				guide.x = 0;
+				guide.y = 0;
+				guide.z = 0;
 				guide.name = 'guide' + i;
 				my.container.addChild(guide);
+				my.world.push({
+					'type': 'line',
+					'pos': vec.create(0, 0, z),
+					'posRight': vec.create(my.width, 0, z),
+					'posTop': vec.create(0, 0, z),
+					'displayObj': guide 
+				});
 			}	
 		},
 
@@ -76,9 +153,13 @@ var canmango = canmango || {};
 			
 			my.container.addChild(bitmap);
 
-			my.stage.update();
-
-			my.arrange();
+			my.world.push({
+				'type': 'bitmap',
+				'pos': vec.create(options.x, 0, options.y),
+				'posRight': vec.create(options.x + 50, 0, options.y),
+				'posTop': vec.create(options.x, 50, options.y),
+				'displayObj': bitmap
+			});
 		},
 
 		/**
@@ -86,7 +167,10 @@ var canmango = canmango || {};
 		 */
 		clear: function()
 		{
-			my.stage.clear();
+			// my.stage.clear();
+			my.world = [];
+			my.createGuides();
+			my.container.removeAllChildren();
 		},
 
 		/**
@@ -95,31 +179,83 @@ var canmango = canmango || {};
 		 */
 		arrange: function()
 		{
-			my.createGuides();
+			var vEye = vec.create(my._x, my._y, my._z);
+			var vTarget = vec.create(my._x, 0, my._z - 200);
+			var vUp = vec.create(0, 1, 0);
+			var mCamera = matrix.lookAt(vEye, vTarget, vUp)
 
-			my.container.sortChildren(function(c1, c2) {
-				return c1.y - c2.y;
-			});	
+			var aspect = my.width / my.height;
+			var mP = matrix.makePerspective(90, aspect, 1, 1000);
 
-			for (var l = 0; l  < my.container.children.length; l++) 
+			var mFin = matrix.mul(
+				matrix.swapRowsAndCols(mP), 
+				matrix.swapRowsAndCols(mCamera)
+			);
+
+			var zToObj = [];
+
+			for (var l = 0; l  < my.world.length; l++) 
 			{
-				var child = my.container.getChildAt(l);
-				var childY = child.y;
-				var scale = (child.y + 1) / my.height;
+				var info = my.world[l];
+				var type = info.type;
 
-				if(child.name.indexOf('guide') == -1)
+				var pos = info.pos;
+				var posRight = info.posRight;
+				var posTop = info.posTop;
+				var displayObj = info.displayObj;
+				
+				var newPos = my.convertPos(pos, mFin);
+				var newPosRight = my.convertPos(posRight, mFin);
+				var newPosTop = my.convertPos(posTop, mFin);
+
+				zToObj.push({'z': newPos.z, 'obj': displayObj});
+
+				var scaleX = Math.abs(newPosRight.x - newPos.x) / 50;
+				var scaleY = Math.abs(newPosTop.y - newPos.y) / 50;
+
+				displayObj.x = Math.round(newPosTop.x);
+				displayObj.y = Math.round(newPosTop.y);
+				displayObj.scaleX = scaleX;
+
+				if(type == 'bitmap')
 				{
-					child.scaleX = scale;
-					child.scaleY = scale;
+					displayObj.scaleY = scaleY;
 				}
-
-				/**
-				var childOffset = child.x - my.width / 2;
-				child.x = Math.round(my.width / 2 + (childOffset * scale));
-				child.y = Math.round(my.height * scale);
-				*/
 			};
+
+			zToObj.sort(function(a, b) {
+				return b.z - a.z;
+			});
+
+			for(var i = 0; i < zToObj.length; i++)
+			{
+				var info = zToObj[i];
+
+				my.container.addChildAt(info.obj, i);
+			}
+			my.stage.update();
 		},
+
+		convertPos: function(pos, mFin)
+		{
+			var posArr = vec.toArray(pos);	
+			posArr[3] = 1;
+			posArr[2] = -posArr[2];
+
+
+			var newPosArr = matrix.mulVec(mFin, posArr);
+			newPosArr[0] /= newPosArr[3];
+			newPosArr[1] /= newPosArr[3];
+			newPosArr[2] /= newPosArr[3];
+			newPosArr[3] /= newPosArr[3];
+
+			var newPos = vec.fromArray(newPosArr);
+
+			newPos.x = newPos.x * this.width;
+			newPos.y = (this.height - (newPos.y * this.height));
+
+			return newPos;
+		}
 	};
 
 	var my = cm.room;
