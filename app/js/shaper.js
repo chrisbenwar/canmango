@@ -32,11 +32,13 @@ var editor2d = function(canvas) {
 	
 	var that = {
 		/**
-		 * Clear the canvas. Using whatever fill colour is currently
-		 * set. 
+		 * Clear the canvas to transparency.
 		 */
 		clear: function() {
+			var fillStyle = ctx.fillStyle;
+			ctx.fillStyle = "rgba(255,255,255,0)";
 			ctx.clearRect(0, 0, _width, _height);   
+			ctx.fillStyle = fillStyle;
 			return; 
 		},
 		
@@ -1487,10 +1489,66 @@ var editor2d = function(canvas) {
 		
 		/**
 		 * Gets an image url representing the canvas image.
+		 *
+		 * It will clip the image to remove any transparency around
+		 * it. 
+		 */
+		toDataURLClipped: function()
+		{
+			var canvasData = ctx.getImageData(0,0,_width,_height);
+			var top = Infinity, bottom = 0;
+			var left = Infinity, right = 0;
+			
+			for(var y = 0; y < _height; y++)
+			{
+				for(var x = 0; x < _width; x++)
+				{					
+					var pix = this.getPixel(canvasData, x, y);
+
+					if(pix.a != 0)
+					{
+						if(y < top)
+						{
+							top = y;
+						}
+						else if(y > bottom)
+						{
+							bottom = y;
+						}
+
+						if(x < left)
+						{
+							left = x
+						}
+						else if(x > right)
+						{
+							right = x;
+						}
+					}
+				}
+			}
+
+			var newWidth = right - left;
+			var newHeight = bottom - top;
+			var outputCanvas = this.createCanvas(newWidth, newHeight);
+			var outputCtx = this.createCtx(outputCanvas, newWidth, newHeight);
+
+			futilitybelt.dev.logger.log([top, left, bottom, right], 'force');
+
+			outputCtx.drawImage(
+				_canvas, 
+				left, top, newWidth, newHeight,
+				0, 0, newWidth, newHeight 
+			);
+			
+			return {"w": newWidth, "h": newHeight, "dataURL": outputCanvas.toDataURL()};
+		},
+		/**
+		 * Gets an image url representing the canvas image.
 		 */
 		toDataURL: function()
 		{
-			return canvas.toDataURL();
+			return _canvas.toDataURL();
 		},
 
 		save: function(url) {

@@ -64,8 +64,18 @@ var physii = physii || {};
 			return mOutput;
 		},
 		/**
+		 * Create the inverse of a matrix.
+		 */
+		inverse: function(m)
+		{
+			
+		},
+		/**
+		 * OpenGL type look at function.
 		 *
-		 * @returns A matrix.
+		 * This is a modified version of that from three.js.
+		 *
+		 * @returns A view matrix.
 		 */
 		lookAt: function(vEye, vTarget, vUp)
 		{
@@ -80,14 +90,6 @@ var physii = physii || {};
 					[xaxis.z, yaxis.z, zaxis.z, 0],
 					[	0,       0,       0,     1]
 			];
-			/*
-			var mOrientation = [
-					[xaxis.x, xaxis.y, xaxis.z, 0],
-					[yaxis.x, yaxis.y, yaxis.z, 0],
-					[zaxis.x, zaxis.y, zaxis.z, 0],
-					[	0,       0,       0,     1]
-			];
-			*/
 			 
 			// Create a 4x4 translation matrix by negating the eye position.
 			var mTranslation = [
@@ -97,44 +99,12 @@ var physii = physii || {};
 					[-vEye.x, -vEye.y, -vEye.z,  1]
 			];
 
-			/*
-			var mTranslation = [
-						[1,      0,      0,     -vEye.x],
-						[0,      1,      0,     -vEye.y], 
-						[0,      0,      1,     -vEye.z],
-					[0, 0, 0,  1]
-			];
-			*/
-	 
-			// Combine the orientation and translation to compute the view matrix
-			//return ( my.mul(mOrientation,mTranslation) );
-			//return mOrientation;
 			return ( my.mul(mTranslation,mOrientation) );
 		},
-		perspective: function(left, right, bottom, top, near, far)
-    {
-			var mPerspective = [
-				[2*near/(right - left), 0, (right+left)/(right -left), 0],
-				[0, 2*near/(top - bottom), (top + bottom)/(top-bottom), 0],
-				[0, 0, -(far +near)/(far - near), -2*far*near/(far - near)],
-				[0, 0, -1, 0]
-			];
-
-
-			return mPerspective;
-    },
-		perspective2: function(near, far, fov)
-		{
-			var scale = 1 / Math.tan(vec.degToRad(fov * 0.5));
-
-			var mP = [
-				[scale, 0, 0, 0],
-				[0, scale, 0, 0],
-				[0, 0, - far / (far - near), - far * near / (far - near)], 
-				[0, 0, -1, 0] 
-			];
-			return mP
-		},
+		/**
+		 * Taken from three.js. Helper function for making projection
+		 * matrices.
+		 */
 		makeFrustum: function ( left, right, bottom, top, near, far ) {
 
 			var m, x, y, a, b, c, d;
@@ -147,15 +117,6 @@ var physii = physii || {};
 			c = - ( far + near ) / ( far - near );
 			d = - 2 * far * near / ( far - near );
 
-			/*
-			var mP = [
-				[x, 0, a, 0],
-				[0, y, b, 0],
-				[0, 0, c, d],
-				[0, 0, -1, 0],
-			];
-			*/
-
 			var mP = [
 				[x, 0, 0, 0],
 				[0, y, 0, 0],
@@ -165,6 +126,11 @@ var physii = physii || {};
 
 			return mP;
 		},
+		/**
+		 * Build a perspective projection matrix.
+		 *
+		 * Taken from three.js.
+		 */
 		makePerspective: function ( fov, aspect, near, far ) {
 			var ymax, ymin, xmin, xmax;
 
@@ -175,6 +141,11 @@ var physii = physii || {};
 
 			return my.makeFrustum( xmin, xmax, ymin, ymax, near, far );
 		},
+		/**
+		 * Build an orthographic projection matrix.
+		 *
+		 * Taken from three.js.
+		 */
 		makeOrthographic: function ( left, right, top, bottom, near, far ) {
 
 			var w = right - left;
@@ -184,13 +155,6 @@ var physii = physii || {};
 			var x = ( right + left ) / w;
 			var y = ( top + bottom ) / h;
 			var z = ( far + near ) / p;
-
-			/*
-			te[0] = 2 / w;	te[4] = 0;	te[8] = 0;	te[12] = -x;
-			te[1] = 0;	te[5] = 2 / h;	te[9] = 0;	te[13] = -y;
-			te[2] = 0;	te[6] = 0;	te[10] = -2/p;	te[14] = -z;
-			te[3] = 0;	te[7] = 0;	te[11] = 0;	te[15] = 1;
-			*/
 
 			var mO = [
 				[2 / w, 0, 0, 0],		

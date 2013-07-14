@@ -2,6 +2,7 @@
 var canmango = canmango || {};
 
 (function(cm) {
+	var logger = futilitybelt.dev.logger;
 
 	cm.shapinSafari = {
 		_canvas: null,
@@ -60,10 +61,16 @@ var canmango = canmango || {};
 				my._imageLoader.loadDesign(design);
 				my._imageLoader.drawDesign();
 				tempCanvas.style.display = 'block';
-				imgDataURL = my._imageLoader.toDataURL(); 
+				var result = my._imageLoader.toDataURLClipped(); 
+				imgDataURL = result.dataURL; 
+				var width = result.w;
+				var height = result.h;
 				tempCanvas.style.display = 'none';
 				image = new Image();
 				image.src = imgDataURL;
+				image.width = width;
+				image.height = height;
+
 
 				var randX = Math.floor(Math.random() * my._room.width);
 				var randY = Math.floor(Math.random() * my._room.height);

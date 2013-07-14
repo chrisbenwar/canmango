@@ -62,38 +62,6 @@ var canmango = canmango || {};
 
 			my.stage.addChild(my.container);
 			my.createGuides();
-
-			var fwd = new ui.RepeatButton( ui.getElem('camFwd'), 
-				function() {
-					(cm.room._z) -= speed;	
-					cm.room.arrange();	
-				},
-				interval
-			);
-
-			var bwd = new ui.RepeatButton( ui.getElem('camBwd'), 
-				function() {
-					(cm.room._z) += speed;	
-					cm.room.arrange();	
-				},
-				interval
-			);
-
-			var right = new ui.RepeatButton( ui.getElem('camRight'), 
-				function() {
-					(cm.room._x) += speed;	
-					cm.room.arrange();	
-				},
-				interval
-			);
-
-			var left = new ui.RepeatButton( ui.getElem('camLeft'), 
-				function() {
-					(cm.room._x) -= speed;	
-					cm.room.arrange();	
-				},
-				interval
-			);
 		},
 
 		createGuides: function(options)
@@ -113,9 +81,9 @@ var canmango = canmango || {};
 				my.world.push({
 					'type': 'line',
 					'pos': vec.create(0, 0, z),
-					'posRight': vec.create(my.width, 0, z),
-					'posTop': vec.create(0, 0, z),
-					'displayObj': guide 
+					'displayObj': guide, 
+					'w': my.width,
+					'h': 1
 				});
 			}	
 		},
@@ -145,12 +113,14 @@ var canmango = canmango || {};
 		 */
 		addImage: function(id, image, options)
 		{
+			var width = image.width;
+			var height = image.height;
 			var bitmap = new createjs.Bitmap(image);
 			bitmap.name = id;
 			bitmap.x = options.x;
 			bitmap.y = options.y;
-			my.images[id] = bitmap;
-			
+			bitmap.onPress = my.pressHandler;
+
 			my.container.addChild(bitmap);
 
 			my.world.push({
@@ -158,8 +128,18 @@ var canmango = canmango || {};
 				'pos': vec.create(options.x, 0, options.y),
 				'posRight': vec.create(options.x + 50, 0, options.y),
 				'posTop': vec.create(options.x, 50, options.y),
-				'displayObj': bitmap
+				'displayObj': bitmap,
+				'w': width,
+				'h': height
 			});
+		},
+
+		pressHandler: function(e){
+			e.onMouseMove = function(ev){
+				e.target.x = ev.stageX;
+				e.target.y = ev.stageY;
+				my.stage.update();
+			 }
 		},
 
 		/**
@@ -200,8 +180,8 @@ var canmango = canmango || {};
 				var type = info.type;
 
 				var pos = info.pos;
-				var posRight = info.posRight;
-				var posTop = info.posTop;
+				var posRight = vec.create(pos.x + info.w, 0, pos.z);
+				var posTop = vec.create(pos.x, info.h, pos.z);
 				var displayObj = info.displayObj;
 				
 				var newPos = my.convertPos(pos, mFin);
@@ -210,8 +190,8 @@ var canmango = canmango || {};
 
 				zToObj.push({'z': newPos.z, 'obj': displayObj});
 
-				var scaleX = Math.abs(newPosRight.x - newPos.x) / 50;
-				var scaleY = Math.abs(newPosTop.y - newPos.y) / 50;
+				var scaleX = Math.abs(newPosRight.x - newPos.x) / info.w;
+				var scaleY = Math.abs(newPosTop.y - newPos.y) / info.h;
 
 				displayObj.x = Math.round(newPosTop.x);
 				displayObj.y = Math.round(newPosTop.y);
