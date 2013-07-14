@@ -141,6 +141,15 @@ var physii = physii || {};
 
 			return my.makeFrustum( xmin, xmax, ymin, ymax, near, far );
 		},
+		perspectiveDivide: function(v)
+		{
+			return [
+				v[0] / v[3], 
+				v[1] / v[3], 
+				v[2] / v[3],
+				v[3] / v[3]
+			];
+		},
 		/**
 		 * Build an orthographic projection matrix.
 		 *

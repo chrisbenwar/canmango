@@ -134,3 +134,29 @@ test('camera lookAt', function() {
 		JSON.stringify(res)
 	);
 });
+
+test('camera perspective', function() {
+	var m = matrix.makePerspective(90, 1, 1, 1000);
+	var mP = matrix.swapRowsAndCols(m); 
+
+	var v = [10, 10, -1, 1];
+	var res = matrix.mulVec(mP, v);
+	var vNew = matrix.perspectiveDivide(res);
+
+	ok(similar(vNew[0], 10) && similar(vNew[1], 10), 
+		'Point on frustum front is unmoved' +
+		JSON.stringify(res)
+	);
+	
+	v = [10, 10, -10, 1];
+	res = matrix.mulVec(mP, v);
+	vNew = matrix.perspectiveDivide(res);
+
+	console.log(res);
+	console.log(vNew);
+
+	ok(vNew[0] < 10 && vNew[1] < 10, 
+		'Point within frustum is moved' +
+		JSON.stringify(res)
+	);
+});
