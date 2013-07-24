@@ -183,10 +183,13 @@ var canmango = canmango || {};
 				var posRight = vec.create(pos.x + info.w, 0, pos.z);
 				var posTop = vec.create(pos.x, info.h, pos.z);
 				var displayObj = info.displayObj;
-				
-				var newPos = my.convertPos(pos, mFin);
-				var newPosRight = my.convertPos(posRight, mFin);
-				var newPosTop = my.convertPos(posTop, mFin);
+
+				var newPos = matrix.project(vec.toArray(pos), mFin, my.width, my.height);
+				newPos = vec.fromArray(newPos);
+				var newPosRight = matrix.project(vec.toArray(posRight), mFin, my.width, my.height);
+				newPosRight = vec.fromArray(newPosRight);
+				var newPosTop = matrix.project(vec.toArray(posTop), mFin, my.width, my.height);
+				newPosTop = vec.fromArray(newPosTop);
 
 				zToObj.push({'z': newPos.z, 'obj': displayObj});
 
@@ -215,13 +218,11 @@ var canmango = canmango || {};
 			}
 			my.stage.update();
 		},
-
 		convertPos: function(pos, mFin)
 		{
 			var posArr = vec.toArray(pos);	
 			posArr[3] = 1;
 			posArr[2] = -posArr[2];
-
 
 			var newPosArr = matrix.mulVec(mFin, posArr);
 			newPosArr[0] /= newPosArr[3];
@@ -236,6 +237,7 @@ var canmango = canmango || {};
 
 			return newPos;
 		}
+
 	};
 
 	var my = cm.room;

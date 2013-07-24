@@ -159,4 +159,30 @@ test('camera perspective', function() {
 		'Point within frustum is moved' +
 		JSON.stringify(res)
 	);
+
+	var mPNew = matrix.reversePerspective(mP);
 });
+
+test('screen coord to normalized', function() {
+	var pos = [0.7, 0.5, -0.2, 1];
+	var width = 800;
+	var height = 600;
+
+	var sp = matrix.normalizedPosToScreen(pos, width, height)
+	JSON.stringify(sp);
+	var np = matrix.screenToNormalizedPos(sp, width, height)
+	JSON.stringify(np);
+
+	ok(np[0] == 0.7 && np[1] == 0.5, "Normalized screen pos reversed: " +
+	 JSON.stringify(np));	
+
+}); 
+
+test('perspective divide', function() {
+	var vDiv = matrix.perspectiveDivide([12, 6, 3, 2]);
+
+	ok(vDiv[0] == 6 && vDiv[1] == 3 && vDiv[2] == 1.5 && vDiv[3] == 1, "perspective divide works: " +
+		JSON.stringify(vDiv));
+}); 
+
+

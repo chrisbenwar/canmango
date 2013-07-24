@@ -126,6 +126,127 @@ var physii = physii || {};
 
 			return mP;
 		},
+		getFOVNormalization: function(near, far)
+		{
+			var d = - 2 * far * near / ( far - near );
+			return d;
+		},
+		reverseFOVNormalization: function(near, far)
+		{
+			var d = ( far - near ) / (- 2 * far * near); 
+			return d;
+		},
+		reversePerspective: function(m)
+		{
+			return m;
+		},
+		getIdentity: function()
+		{
+			var m = [
+				[ 1, 0, 0, 0],
+				[ 0, 1, 0, 0],
+				[ 0, 0, 1, 0],
+				[ 0, 0, 0, 1],
+			];
+			
+			return m;
+		},
+		getInverse: function ( m, throwOnInvertible ) {
+
+			var te = my.getIdentity();
+			var me = my.getIdentity();
+
+			te[0][0] = me[2][1]*me[3][2]*me[1][3] -
+					me[3][1]*me[2][2]*me[1][3] + me[3][1]*me[1][2]*me[2][3] -
+					me[1][1]*me[3][2]*me[2][3] -
+					me[2][1]*me[1][2]*me[3][3] + me[1][1]*me[2][2]*me[3][3];
+			te[1][0] = me[3][0]*me[2][2]*me[1][3] -
+					me[2][0]*me[3][2]*me[1][3] -
+					me[3][0]*me[1][2]*me[2][3] + me[1][0]*me[3][2]*me[2][3] + me[2][0]*me[1][2]*me[3][3] -
+					me[1][0]*me[2][2]*me[3][3];
+			te[2][0] = me[2][0]*me[3][1]*me[1][3] -
+					me[3][0]*me[2][1]*me[1][3] + me[3][0]*me[1][1]*me[2][3] -
+					me[1][0]*me[3][1]*me[2][3] -
+					me[2][0]*me[1][1]*me[3][3] + me[1][0]*me[2][1]*me[3][3];
+			te[3][0] = me[3][0]*me[2][1]*me[1][2] -
+					me[2][0]*me[3][1]*me[1][2] -
+					me[3][0]*me[1][1]*me[2][2] + me[1][0]*me[3][1]*me[2][2] + me[2][0]*me[1][1]*me[3][2] -
+					me[1][0]*me[2][1]*me[3][2];
+			te[0][1] = me[3][1]*me[2][2]*me[0][3] -
+					me[2][1]*me[3][2]*me[0][3] -
+					me[3][1]*me[0][2]*me[2][3] + me[0][1]*me[3][2]*me[2][3] + me[2][1]*me[0][2]*me[3][3] -
+					me[0][1]*me[2][2]*me[3][3];
+			te[1][1] = me[2][0]*me[3][2]*me[0][3] -
+					me[3][0]*me[2][2]*me[0][3] + me[3][0]*me[0][2]*me[2][3] -
+					me[0][0]*me[3][2]*me[2][3] -
+					me[2][0]*me[0][2]*me[3][3] + me[0][0]*me[2][2]*me[3][3];
+			te[2][1] = me[3][0]*me[2][1]*me[0][3] -
+					me[2][0]*me[3][1]*me[0][3] -
+					me[3][0]*me[0][1]*me[2][3] + me[0][0]*me[3][1]*me[2][3] + me[2][0]*me[0][1]*me[3][3] -
+					me[0][0]*me[2][1]*me[3][3];
+			te[3][1] = me[2][0]*me[3][1]*me[0][2] -
+					me[3][0]*me[2][1]*me[0][2] + me[3][0]*me[0][1]*me[2][2] -
+					me[0][0]*me[3][1]*me[2][2] -
+					me[2][0]*me[0][1]*me[3][2] + me[0][0]*me[2][1]*me[3][2];
+			te[0][2] = me[1][1]*me[3][2]*me[0][3] -
+					me[3][1]*me[1][2]*me[0][3] + me[3][1]*me[0][2]*me[1][3] -
+					me[0][1]*me[3][2]*me[1][3] -
+					me[1][1]*me[0][2]*me[3][3] + me[0][1]*me[1][2]*me[3][3];
+			te[1][2] = me[3][0]*me[1][2]*me[0][3] -
+					me[1][0]*me[3][2]*me[0][3] -
+					me[3][0]*me[0][2]*me[1][3] + me[0][0]*me[3][2]*me[1][3] + me[1][0]*me[0][2]*me[3][3] -
+					me[0][0]*me[1][2]*me[3][3];
+			te[2][2] = me[1][0]*me[3][1]*me[0][3] -
+					me[3][0]*me[1][1]*me[0][3] + me[3][0]*me[0][1]*me[1][3] -
+					me[0][0]*me[3][1]*me[1][3] -
+					me[1][0]*me[0][1]*me[3][3] + me[0][0]*me[1][1]*me[3][3];
+			te[3][2] = me[3][0]*me[1][1]*me[0][2] -
+					me[1][0]*me[3][1]*me[0][2] -
+					me[3][0]*me[0][1]*me[1][2] + me[0][0]*me[3][1]*me[1][2] + me[1][0]*me[0][1]*me[3][2] -
+					me[0][0]*me[1][1]*me[3][2];
+			te[0][3] = me[2][1]*me[1][2]*me[0][3] -
+					me[1][1]*me[2][2]*me[0][3] -
+					me[2][1]*me[0][2]*me[1][3] + me[0][1]*me[2][2]*me[1][3] + me[1][1]*me[0][2]*me[2][3] -
+					me[0][1]*me[1][2]*me[2][3];
+			te[1][3] = me[1][0]*me[2][2]*me[0][3] -
+					me[2][0]*me[1][2]*me[0][3] + me[2][0]*me[0][2]*me[1][3] -
+					me[0][0]*me[2][2]*me[1][3] -
+					me[1][0]*me[0][2]*me[2][3] + me[0][0]*me[1][2]*me[2][3];
+			te[2][3] = me[2][0]*me[1][1]*me[0][3] -
+					me[1][0]*me[2][1]*me[0][3] -
+					me[2][0]*me[0][1]*me[1][3] + me[0][0]*me[2][1]*me[1][3] + me[1][0]*me[0][1]*me[2][3] -
+					me[0][0]*me[1][1]*me[2][3];
+			te[3][3] = me[1][0]*me[2][1]*me[0][2] -
+					me[2][0]*me[1][1]*me[0][2] + me[2][0]*me[0][1]*me[1][2] -
+					me[0][0]*me[2][1]*me[1][2] -
+					me[1][0]*me[0][1]*me[2][2] + me[0][0]*me[1][1]*me[2][2];
+
+			var det = me[0][0] * te[0][0] + me[0][1] * te[1][0] + me[0][2] * te[2][0] + me[0][3] * te[3][0];
+
+			if ( det == 0 ) {
+
+				var msg = "Matrix4.getInverse(): can't invert matrix, determinant is 0";
+
+				if ( throwOnInvertible || false ) {
+
+					throw new Error( msg ); 
+
+				} else {
+
+					console.warn( msg );
+
+				}
+
+				this.identity();
+
+				return this;
+			}
+
+			this.multiplyScalar( 1 / det );
+
+			return this;
+
+		},
 		/**
 		 * Build a perspective projection matrix.
 		 *
@@ -141,6 +262,17 @@ var physii = physii || {};
 
 			return my.makeFrustum( xmin, xmax, ymin, ymax, near, far );
 		},
+		project: function(vPos, mWorldProject, width, height)
+		{
+			vPos[3] = 1;
+			vPos[2] = -vPos[2];
+
+			var projectionPos = my.mulVec(mWorldProject, vPos);
+			var normalizedPos = my.perspectiveDivide(projectionPos);
+			var screenPos = my.normalizedPosToScreen(normalizedPos, width, height);
+
+			return screenPos;
+		},
 		perspectiveDivide: function(v)
 		{
 			return [
@@ -149,6 +281,28 @@ var physii = physii || {};
 				v[2] / v[3],
 				v[3] / v[3]
 			];
+		},
+		normalizedPosToScreen: function(pos, width, height)
+		{
+			var screenPos = []; 
+			screenPos[0] = pos[0] * width;
+			screenPos[1] = height - (pos[1] * height);
+			screenPos[2] = pos[2];
+			screenPos[3] = 1;
+			return screenPos;
+		},
+		screenToNormalizedPos: function(pos, width, height)
+		{
+			var newPos = [];
+			newPos[0] = pos[0] / width;
+			newPos[1] = 1 - (pos[1] / height);
+			newPos[2] = pos[2];
+			newPos[3] = 1;
+			return newPos;
+		},
+		unproject: function(vPos, mWorldProject, width, height)
+		{
+
 		},
 		/**
 		 * Build an orthographic projection matrix.
