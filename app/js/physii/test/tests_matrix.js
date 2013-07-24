@@ -185,4 +185,28 @@ test('perspective divide', function() {
 		JSON.stringify(vDiv));
 }); 
 
+test('getInverse', function() {
+	var m = matrix.getIdentity();
+
+	var mInv = matrix.getInverse(m);
+
+	ok(mInv[0][0] == 1 && mInv[1][1] == 1 && mInv[2][2] == 1 && mInv[3][3] == 1, "inv identitiy is identity: " +
+		JSON.stringify(mInv));
+
+	m = matrix.multiplyScalar(matrix.getIdentity(), 4);	
+	mInv = matrix.getInverse(m);
+
+	ok(mInv[0][0] == 0.25 && mInv[1][1]  == 0.25 && 
+		mInv[2][2]  == 0.25 && mInv[3][3]  == 0.25, "mul identitiy inverse is identity: " +
+		JSON.stringify([m, mInv]));
+});  
+
+test('getDeterminant', function() {
+	var m = matrix.multiplyScalar(matrix.getIdentity(), 4);	
+	var det = matrix.getDeterminant(m);
+
+	ok(det == 256, "Det of 4 * identity is 4: " +
+		JSON.stringify([m, det]));
+}); 
+
 
