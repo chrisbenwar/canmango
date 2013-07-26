@@ -63,6 +63,30 @@ var physii = physii || {};
 
 			return mOutput;
 		},
+		equals: function(m1, m2)
+		{
+			var dim = m1.length;
+			var equal = true;
+			var precision = 0.01;
+
+			for(var i = 0; i < dim; i++)
+			{
+				for(var j = 0; j < dim; j++)
+				{
+					if(Math.abs(m1[i][j] - m2[i][j]) > precision)
+					{
+						equal = false;
+						break;
+					}	
+				}
+				if(!equal)
+				{
+					break;
+				}
+			}
+
+			return equal;
+		},
 		/**
 		 * OpenGL type look at function.
 		 *

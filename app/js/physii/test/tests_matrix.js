@@ -113,7 +113,6 @@ test('camera lookAt', function() {
 	var vUp = vec.create(0, 0, 1);
 	var mCam = matrix.lookAt(vEye, vTarget, vUp);
 
-	console.log( JSON.stringify(mCam) );
 	var v = [0, 2, -2, 1]; 
 	
 	var res = matrix.mulVec(matrix.swapRowsAndCols(mCam), v);
@@ -151,9 +150,6 @@ test('camera perspective', function() {
 	v = [10, 10, -10, 1];
 	res = matrix.mulVec(mP, v);
 	vNew = matrix.perspectiveDivide(res);
-
-	console.log(res);
-	console.log(vNew);
 
 	ok(vNew[0] < 10 && vNew[1] < 10, 
 		'Point within frustum is moved' +
@@ -209,4 +205,39 @@ test('getDeterminant', function() {
 		JSON.stringify([m, det]));
 }); 
 
+test('matrix equals', function() {
+	var m1 = [ [1, 2], [3, 4] ];	
+	var m2 = [ [1, 2], [3, 4] ];
 
+	ok(matrix.equals(m1, m2), "equal: " + JSON.stringify([m1, m2]));
+
+	m1 = [ [1, 2], [3, 4] ];	
+	m2 = [ [1, 3], [3, 4] ];
+
+	ok(!matrix.equals(m1, m2), "not equal: " + JSON.stringify([m1, m2]));
+	
+	m1 = [ [1.009, 2], [3.001, 4] ];	
+	m2 = [ [1, 2.001], [3, 4] ];
+
+	ok(matrix.equals(m1, m2), "equal precision: " + JSON.stringify([m1, m2]));
+}); 
+
+test('Reverse view matrix', function() {
+	var vEye = vec.create(0, 100, 500);
+	var vTarget = vec.create(0, 0, 500 - 200);
+	var vUp = vec.create(0, 1, 0);
+	var m = matrix.lookAt(vEye, vTarget, vUp);	
+
+	var mInv = matrix.getInverse(m);
+	var m2 = matrix.getInverse(mInv);
+
+	ok(matrix.equals(m, m2), "no test: " + JSON.stringify(''));	
+
+	var v2 = matrix.mulVec(m, [2, 2, -2]);
+	var v3 = matrix.mulVec(mInv, v2);
+	var v2Arr = vec.fromArray(v2);
+	var v3Arr = vec.fromArray(v3);
+	
+	ok(vec.equal(v2Arr, v3Arr), "description: " +
+		JSON.stringify([v2Arr, v3Arr]));
+}); 
