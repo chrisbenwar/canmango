@@ -153,10 +153,6 @@ var physii = physii || {};
 			var d = ( far - near ) / (- 2 * far * near); 
 			return d;
 		},
-		reversePerspective: function(m)
-		{
-			return my.getInverse(m);
-		},
 		/**
 		 * Build a perspective projection matrix.
 		 *
@@ -171,6 +167,34 @@ var physii = physii || {};
 			xmax = ymax * aspect;
 
 			return my.makeFrustum( xmin, xmax, ymin, ymax, near, far );
+		},
+		perspective: function(fov, near, far)
+		{
+			var m = my.getIdentity();
+			var scale = 1 / Math.tan(fov * 0.5 * (Math.PI / 180));
+
+			m[0][0] = scale;
+			m[1][1] = scale;
+			m[2][2] = -far / (far - near);
+			m[3][2] = -((far * near) / (far - near));
+			m[2][3] = -1;
+			m[3][3] = 0;
+
+			return m;
+		},
+		reversePerspective: function(fov, near, far)
+		{
+			var m = my.getIdentity();
+			var scale = Math.tan(fov * 0.5 * (Math.PI / 180));
+
+			m[0][0] = scale;
+			m[1][1] = scale;
+			m[2][2] = 0;
+			m[3][2] = -((far - near) / (far * near));
+			m[2][3] = -(far - near) / far;
+			m[3][3] = 1;
+
+			return m;
 		},
 		project: function(vPos, mWorldProject, width, height)
 		{

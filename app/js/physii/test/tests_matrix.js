@@ -241,3 +241,30 @@ test('Reverse view matrix', function() {
 	ok(vec.equal(v2Arr, v3Arr), "description: " +
 		JSON.stringify([v2Arr, v3Arr]));
 }); 
+
+test('Perspective / reverse perspective', function() {
+	var m = matrix.perspective(90, 1, 1000);
+	var mR = matrix.reversePerspective(90, 1, 1000);
+	var mInvR = matrix.getInverse(m);
+	var v = [200, 200, -10, 1];
+
+	var vP = matrix.mulVec(m, v);
+	var vPDiv = matrix.perspectiveDivide(vP);
+
+	ok(vec.equal(vec.fromArray(vPDiv), vec.create(20, 20, 0.9, 1), 0.1), "After perspective: " +
+		JSON.stringify([vP, vPDiv]));
+
+	ok(matrix.equals(mR, mInvR), "Reverse perspective equals inverse: " +
+		JSON.stringify([mR, mInvR]));
+
+	var vRP = matrix.mulVec(mR, vPDiv);
+	vRP = matrix.perspectiveDivide(vRP);
+
+	ok(vec.equal(vec.fromArray(vRP), vec.create(200, 200, -10), 0.1), 
+		"Reverse perspective matches original: " + JSON.stringify([vRP]));
+
+	var vInvRP = matrix.mulVec(mInvR, vPDiv);
+	vInvRP = matrix.perspectiveDivide(vInvRP);
+	ok(vec.equal(vec.fromArray(vInvRP), vec.create(200, 200, -10), 0.1), 
+		"Inverse perspective matches original: " + JSON.stringify([vInvRP]));
+}); 
