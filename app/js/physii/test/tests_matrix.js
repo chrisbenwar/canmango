@@ -115,7 +115,7 @@ test('camera lookAt', function() {
 
 	var v = [0, 2, -2, 1]; 
 	
-	var res = matrix.mulVec(matrix.swapRowsAndCols(mCam), v);
+	var res = matrix.mulVec(mCam, v);
 
 	ok(
 		res[0] == 0 && res[1] == -2 && res[2] == -8,
@@ -125,18 +125,31 @@ test('camera lookAt', function() {
 
 	v = [2, 0, -2, 1];
 
-	var res = matrix.mulVec(matrix.swapRowsAndCols(mCam), v);
+	var res = matrix.mulVec(mCam, v);
 
 	ok(
 		res[0] == -2 && res[1] == -2 && res[2] == -10,
 		"Vertex rotated using camera." +
 		JSON.stringify(res)
 	);
+
+	var vEye = vec.create(-2, -2, 10);
+	var vTarget = vec.create(-2, -2, -1);
+	var vUp = vec.create(0, 1, 0);
+	var mCam = matrix.lookAt(vEye, vTarget, vUp);
+
+	v = [2, 0, 0, 1];
+
+	var res = matrix.mulVec(mCam, v);
+	var vRes = vec.fromArray(res);
+
+	ok(vec.equal(vRes, vec.create(4, 2, -10)), "V rotated: " +
+		JSON.stringify([res]));
+
 });
 
 test('camera perspective', function() {
-	var m = matrix.makePerspective(90, 1, 1, 1000);
-	var mP = matrix.swapRowsAndCols(m); 
+	var mP = matrix.makePerspective(90, 1, 1, 1000);
 
 	var v = [10, 10, -1, 1];
 	var res = matrix.mulVec(mP, v);
@@ -268,3 +281,41 @@ test('Perspective / reverse perspective', function() {
 	ok(vec.equal(vec.fromArray(vInvRP), vec.create(200, 200, -10), 0.1), 
 		"Inverse perspective matches original: " + JSON.stringify([vInvRP]));
 }); 
+
+test('Screen to world', function() {
+	var x = 0;
+	var y = 0;
+	var z = 10;
+	var width = 800;
+	var height = 800;
+
+	var pos = [10, 0, -10, 1];
+
+	var vEye = vec.create(x, y, z);
+	var vTarget = vec.create(0, 0, 0);
+	var vUp = vec.create(0, 1, 0);
+	var mView = matrix.lookAt(vEye, vTarget, vUp)
+
+	var viewPos = matrix.mulVec(mView, pos);
+	var vViewPos = vec.fromArray(viewPos);
+
+	ok(vec.equal(vViewPos, vec.create(10, 0, -20)), 
+		"World to view correct." + JSON.stringify([vViewPos, mView, pos]));
+
+	var aspect = 1;
+	var mP = matrix.perspective(90, 1, 100);
+
+	var mFin = matrix.mul(
+		mView,
+		mP 
+	);
+
+	var finPos = matrix.mulVec(mFin, pos);
+	var divPos = matrix.perspectiveDivide(finPos);
+	console.log(JSON.stringify([finPos, divPos]));
+
+	var newPos = matrix.project(vec.toArray(pos), mFin, width, height);
+
+	console.log(JSON.stringify([pos, newPos]));
+});
+
