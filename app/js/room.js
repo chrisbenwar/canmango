@@ -17,8 +17,8 @@ var canmango = canmango || {};
 		images: {},
 		world: [],
 		_x: 0,
-		_y: 100,
-		_z: 500,
+		_y: 200,
+		_z: 400,
 
 		/**
 		 * Initialize the gallery by creating an
@@ -73,14 +73,11 @@ var canmango = canmango || {};
 			{
 				var z = (1000 / 10) * i;
 				var guide = my.createGuide();
-				guide.x = 0;
-				guide.y = 0;
-				guide.z = 0;
 				guide.name = 'guide' + i;
 				my.container.addChild(guide);
 				my.world.push({
 					'type': 'line',
-					'pos': vec.create(0, 0, z),
+					'pos': vec.create(-(my.width / 2), 0, z),
 					'displayObj': guide, 
 					'w': my.width,
 					'h': 1
@@ -162,14 +159,14 @@ var canmango = canmango || {};
 			var vEye = vec.create(my._x, my._y, my._z);
 			var vTarget = vec.create(my._x, 0, my._z - 200);
 			var vUp = vec.create(0, 1, 0);
-			var mCamera = matrix.lookAt(vEye, vTarget, vUp)
+			var mView = matrix.lookAt(vEye, vTarget, vUp)
 
 			var aspect = my.width / my.height;
 			var mP = matrix.makePerspective(90, aspect, 1, 1000);
 
 			var mFin = matrix.mul(
-				matrix.swapRowsAndCols(mP), 
-				matrix.swapRowsAndCols(mCamera)
+				mP, 
+				mView
 			);
 
 			var zToObj = [];
@@ -180,6 +177,10 @@ var canmango = canmango || {};
 				var type = info.type;
 
 				var pos = info.pos;
+				if (type != 'bitmap') {
+				  console.log(JSON.stringify([type, pos]));
+				}
+
 				var posRight = vec.create(pos.x + info.w, 0, pos.z);
 				var posTop = vec.create(pos.x, info.h, pos.z);
 				var displayObj = info.displayObj;

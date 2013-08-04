@@ -213,16 +213,19 @@ var physii = physii || {};
 
 			return m;
 		},
-		project: function(vPos, mWorldProject, width, height)
+		project: function(pos, mWorldProject, width, height)
 		{
-			vPos[3] = 1;
-			vPos[2] = -vPos[2];
-
-			var projectionPos = my.mulVec(mWorldProject, vPos);
-			var normalizedPos = my.perspectiveDivide(projectionPos);
-			var screenPos = my.normalizedPosToScreen(normalizedPos, width, height);
-
+			var finPos = my.mulVec(mWorldProject, pos);
+			var divPos = my.perspectiveDivide(finPos);
+			var screenPos = my.normalizedPosToScreen(divPos, width, height);
 			return screenPos;
+		},
+		unProject: function(pos, mProjectWorld, width, height)
+		{
+			var nP = my.screenToNormalizedPos(pos, width, height);
+			var wP = my.mulVec(mProjectWorld, nP);
+			var fP = my.perspectiveDivide(wP);
+			return fP;
 		},
 		perspectiveDivide: function(v)
 		{
@@ -236,8 +239,8 @@ var physii = physii || {};
 		normalizedPosToScreen: function(pos, width, height)
 		{
 			var screenPos = []; 
-			screenPos[0] = pos[0] * width;
-			screenPos[1] = height - (pos[1] * height);
+			screenPos[0] = ((pos[0] + 1) / 2) * width;
+			screenPos[1] = height - (((pos[1] + 1) / 2) * height);
 			screenPos[2] = pos[2];
 			screenPos[3] = 1;
 			return screenPos;
@@ -245,8 +248,8 @@ var physii = physii || {};
 		screenToNormalizedPos: function(pos, width, height)
 		{
 			var newPos = [];
-			newPos[0] = pos[0] / width;
-			newPos[1] = 1 - (pos[1] / height);
+			newPos[0] = (pos[0] / width) * 2 - 1;
+			newPos[1] = 0 - ((pos[1] / height) * 2 - 1);
 			newPos[2] = pos[2];
 			newPos[3] = 1;
 			return newPos;

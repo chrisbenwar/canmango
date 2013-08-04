@@ -177,6 +177,17 @@ test('screen coord to normalized', function() {
 	var width = 800;
 	var height = 600;
 
+	posTopLeft  = [-1, 1, 0, 1];
+	posBottomRight = [1, -1, 0, 1];
+
+	var pTL = matrix.normalizedPosToScreen(posTopLeft, width, height)
+	ok(vec.equal(vec.fromArray(pTL), vec.create(0, 0, 0)), 
+		"Top left -1,1 to 0,0: " + JSON.stringify(pTL));
+
+	var pBR = matrix.normalizedPosToScreen(posBottomRight, width, height)
+	ok(vec.equal(vec.fromArray(pBR), vec.create(800, 600, 0)), 
+		"Bottom right 1,-1 to 800,600: " + JSON.stringify(pBR));
+
 	var sp = matrix.normalizedPosToScreen(pos, width, height)
 	JSON.stringify(sp);
 	var np = matrix.screenToNormalizedPos(sp, width, height)
@@ -282,7 +293,7 @@ test('Perspective / reverse perspective', function() {
 		"Inverse perspective matches original: " + JSON.stringify([vInvRP]));
 }); 
 
-test('Screen to world', function() {
+test('World to screen in steps', function() {
 	var x = 0;
 	var y = 0;
 	var z = 10;
@@ -290,6 +301,7 @@ test('Screen to world', function() {
 	var height = 800;
 
 	var pos = [10, 0, -10, 1];
+	var pos1 = [10, 0, 9, 1];
 
 	var vEye = vec.create(x, y, z);
 	var vTarget = vec.create(0, 0, 0);
@@ -305,17 +317,75 @@ test('Screen to world', function() {
 	var aspect = 1;
 	var mP = matrix.perspective(90, 1, 100);
 
-	var mFin = matrix.mul(
-		mView,
-		mP 
-	);
+	var mFin = matrix.mul(mP, mView);
 
 	var finPos = matrix.mulVec(mFin, pos);
 	var divPos = matrix.perspectiveDivide(finPos);
-	console.log(JSON.stringify([finPos, divPos]));
 
-	var newPos = matrix.project(vec.toArray(pos), mFin, width, height);
+	ok(Math.abs(divPos[0] - 0.5) < 0.01, "Projected x-coord as expected: " +
+		JSON.stringify(divPos));
 
-	console.log(JSON.stringify([pos, newPos]));
+	var screenPos = matrix.normalizedPosToScreen(divPos, width, height);
+	var pPos = matrix.project(pos, mFin, width, height);
+	var equal = true;
+	for(var i = 0; i < screenPos.length; i++)
+	{
+		if(screenPos[i] != pPos[i])
+		{
+			equal = false;
+			break;
+		}
+	}
+
+	ok(equal, "matrix.project same as individual ops" +
+			JSON.stringify([screenPos, pPos]));
+
+	var finPos1 = matrix.mulVec(mFin, pos1);
+	var divPos1 = matrix.perspectiveDivide(finPos1);
+	console.log(JSON.stringify([divPos1]));
+
+	ok(divPos1[2] < divPos[2], "Closer point has lower projected z: " +
+		JSON.stringify([divPos1, divPos]));
+
+	console.log(JSON.stringify([screenPos]));
+
+
 });
 
+test('Screen to world in steps', function() {
+	var x = 0;
+	var y = 0;
+	var z = 10;
+	var width = 800;
+	var height = 800;
+
+	var pos = [10, 10, -90, 1];
+
+	var vEye = vec.create(x, y, z);
+	var vTarget = vec.create(0, 0, 0);
+	var vUp = vec.create(0, 1, 0);
+	var mView = matrix.lookAt(vEye, vTarget, vUp)
+
+	var viewPos = matrix.mulVec(mView, pos);
+	var vViewPos = vec.fromArray(viewPos);
+
+	ok(vec.equal(vViewPos, vec.create(10, 0, -101)), 
+		"World to view correct." + JSON.stringify([vViewPos, mView, pos]));
+
+	var aspect = 1;
+	var mP = matrix.perspective(90, 1, 100);
+
+	var mFin = matrix.mul(mP, mView);
+
+	var p = matrix.project(pos, mFin, width, height);
+
+	console.log(JSON.stringify(['p', p]));
+
+	var mRView = matrix.getInverse(mView);
+	var mRP = matrix.reversePerspective(90, 1, 100);
+	var mRFin = matrix.mul(mRView, mRP);
+	var uP = matrix.unProject(p, mRFin, width, height);
+
+	ok(vec.equal(vec.fromArray(uP),vec.fromArray(pos)), "Project eq unproject: " +
+		JSON.stringify([uP, pos]));
+}); 

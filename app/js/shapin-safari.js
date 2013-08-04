@@ -73,6 +73,7 @@ var canmango = canmango || {};
 
 
 				var randX = Math.floor(Math.random() * my._room.width);
+				randX -= my._room.width / 2;
 				var randY = Math.floor(Math.random() * my._room.height);
 
 				my._room.addImage(canvasID, image, {x: randX, y: randY});
