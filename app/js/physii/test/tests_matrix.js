@@ -359,7 +359,7 @@ test('Screen to world in steps', function() {
 	var width = 800;
 	var height = 800;
 
-	var pos = [10, 10, -90, 1];
+	var pos = [10, 0, -90, 1];
 
 	var vEye = vec.create(x, y, z);
 	var vTarget = vec.create(0, 0, 0);
@@ -369,7 +369,7 @@ test('Screen to world in steps', function() {
 	var viewPos = matrix.mulVec(mView, pos);
 	var vViewPos = vec.fromArray(viewPos);
 
-	ok(vec.equal(vViewPos, vec.create(10, 0, -101)), 
+	ok(vec.equal(vViewPos, vec.create(10, 0, -100)), 
 		"World to view correct." + JSON.stringify([vViewPos, mView, pos]));
 
 	var aspect = 1;
@@ -388,4 +388,13 @@ test('Screen to world in steps', function() {
 
 	ok(vec.equal(vec.fromArray(uP),vec.fromArray(pos)), "Project eq unproject: " +
 		JSON.stringify([uP, pos]));
+
+	var pp1 = [10, 5, -100, 1];
+	var pp1Proj = matrix.mulVec(mP, pp1);
+	var pp1UnProj = matrix.mulVec(mRP, pp1Proj);
+
+	ok(vec.equal(vec.fromArray(pp1),vec.fromArray(pp1UnProj)), "Pers eq unpers: " +
+		JSON.stringify([mRP, pp1, pp1UnProj]));
+
+
 }); 

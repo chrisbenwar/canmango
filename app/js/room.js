@@ -72,6 +72,7 @@ var canmango = canmango || {};
 			for(var i = 0; i < numGuides; i++)
 			{
 				var z = (1000 / 10) * i;
+				z = -z;
 				var guide = my.createGuide();
 				guide.name = 'guide' + i;
 				my.container.addChild(guide);
@@ -122,9 +123,9 @@ var canmango = canmango || {};
 
 			my.world.push({
 				'type': 'bitmap',
-				'pos': vec.create(options.x, 0, options.y),
-				'posRight': vec.create(options.x + 50, 0, options.y),
-				'posTop': vec.create(options.x, 50, options.y),
+				'pos': vec.create(options.x, 0, -options.y),
+				'posRight': vec.create(options.x + 50, 0, -options.y),
+				'posTop': vec.create(options.x, 50, -options.y),
 				'displayObj': bitmap,
 				'w': width,
 				'h': height
@@ -162,12 +163,14 @@ var canmango = canmango || {};
 			var mView = matrix.lookAt(vEye, vTarget, vUp)
 
 			var aspect = my.width / my.height;
-			var mP = matrix.makePerspective(90, aspect, 1, 1000);
+			var mP = matrix.perspective(90, 1, 1000);
 
-			var mFin = matrix.mul(
-				mP, 
-				mView
-			);
+			var mFin = matrix.mul( mP, mView);
+
+			var mRView = matrix.getInverse(mView);
+			var mRP = matrix.reversePerspective(90, 1, 1000);
+
+			var mRFin = matrix.mul(mRView, mRP);
 
 			var zToObj = [];
 
@@ -177,6 +180,7 @@ var canmango = canmango || {};
 				var type = info.type;
 
 				var pos = info.pos;
+
 				if (type != 'bitmap') {
 				  console.log(JSON.stringify([type, pos]));
 				}
@@ -217,7 +221,29 @@ var canmango = canmango || {};
 
 				my.container.addChildAt(info.obj, i);
 			}
+
+			var pSNear = [200, 300, 0, 1];
+			var pSFar = [200, 300, 1, 1];
+
+			var pNear = matrix.unProject(pSNear, mRFin, my.width, my.height);
+			var pFar = matrix.unProject(pSFar, mRFin, my.width, my.height);
+
+			console.log(JSON.stringify(['nf', pNear, pFar]));
+
 			my.stage.update();
+		},
+		createLine: function(from, to)
+		{
+			var g = new createjs.Graphics();
+			var s = new createjs.Shape(g);
+
+			g.beginStroke('black');
+			g.setStrokeStyle(1);
+			g.moveTo(from.x,from.y);
+			g.lineTo(to.x, to.y);
+			g.endStroke();
+
+			return s;
 		},
 		convertPos: function(pos, mFin)
 		{

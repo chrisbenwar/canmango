@@ -192,7 +192,7 @@ var physii = physii || {};
 
 			m[0][0] = scale;
 			m[1][1] = scale;
-			m[2][2] = -far / (far - near);
+			m[2][2] = -(far / (far - near));
 			m[2][3] = -((far * near) / (far - near));
 			m[3][2] = -1;
 			m[3][3] = 0;
@@ -207,14 +207,15 @@ var physii = physii || {};
 			m[0][0] = scale;
 			m[1][1] = scale;
 			m[2][2] = 0;
-			m[2][3] = -((far - near) / (far * near));
-			m[3][2] = -(far - near) / far;
-			m[3][3] = 1;
+			m[2][3] = -1;
+			m[3][2] =  -((far - near) / (far * near));
+			m[3][3] = ((far - near) / far) / ((far - near) / (far * near));
 
 			return m;
 		},
 		project: function(pos, mWorldProject, width, height)
 		{
+			pos[3] = 1;
 			var finPos = my.mulVec(mWorldProject, pos);
 			var divPos = my.perspectiveDivide(finPos);
 			var screenPos = my.normalizedPosToScreen(divPos, width, height);
