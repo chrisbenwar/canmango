@@ -132,10 +132,63 @@ var canmango = canmango || {};
 			});
 		},
 
+		getByName: function(name)
+		{
+			for(var i = 0; i < my.world.length; i++)
+			{
+				var data = my.world[i];
+				if(data.displayObj.name == name)
+				{
+					return i;
+				}
+			}
+		},
+
 		pressHandler: function(e){
 			e.onMouseMove = function(ev){
-				e.target.x = ev.stageX;
-				e.target.y = ev.stageY;
+				var x = ev.stageX;
+				var y = ev.stageY;
+				var target = ev.target;
+				var objName = target.name;
+				var objIndex = my.getByName(objName);
+				var info = my.world[objIndex];
+
+				var pSNear = [x, y, 0, 1];
+				var pSFar = [x, y, 1, 1];
+
+				var pNear = matrix.unProject(pSNear, my.mRFin, my.width, my.height);
+				var pFar = matrix.unProject(pSFar, my.mRFin, my.width, my.height);
+
+				var ratio = pNear[1] / (pNear[1] - pFar[1]);
+
+				var pZero = [	
+					pNear[0] - ((pNear[0] - pFar[0]) * ratio),
+					pNear[1] - ((pNear[1] - pFar[1]) * ratio),
+					pNear[2] - ((pNear[2] - pFar[2]) * ratio)
+				];
+					
+				info.pos = vec.fromArray(pZero);
+				var pos = info.pos;
+
+				console.log(JSON.stringify(['pz', pZero]));
+				var posRight = vec.create(pos.x + info.w, 0, pos.z);
+				var posTop = vec.create(pos.x, info.h, pos.z);
+				var displayObj = info.displayObj;
+
+				var newPos = matrix.project(vec.toArray(pos), my.mFin, my.width, my.height);
+				newPos = vec.fromArray(newPos);
+				var newPosRight = matrix.project(vec.toArray(posRight), my.mFin, my.width, my.height);
+				newPosRight = vec.fromArray(newPosRight);
+				var newPosTop = matrix.project(vec.toArray(posTop), my.mFin, my.width, my.height);
+				newPosTop = vec.fromArray(newPosTop);
+
+				var scaleX = Math.abs(newPosRight.x - newPos.x) / info.w;
+				var scaleY = Math.abs(newPosTop.y - newPos.y) / info.h;
+
+				displayObj.x = Math.round(newPosTop.x);
+				displayObj.y = Math.round(newPosTop.y);
+				displayObj.scaleX = scaleX;
+				displayObj.scaleY = scaleY;
 				my.stage.update();
 			 }
 		},
@@ -165,12 +218,15 @@ var canmango = canmango || {};
 			var aspect = my.width / my.height;
 			var mP = matrix.perspective(90, 1, 1000);
 
-			var mFin = matrix.mul( mP, mView);
+			var mFin = matrix.mul(mP, mView);
+
+			my.mFin = mFin;
 
 			var mRView = matrix.getInverse(mView);
 			var mRP = matrix.reversePerspective(90, 1, 1000);
 
 			var mRFin = matrix.mul(mRView, mRP);
+			my.mRFin = mRFin;
 
 			var zToObj = [];
 
@@ -228,7 +284,15 @@ var canmango = canmango || {};
 			var pNear = matrix.unProject(pSNear, mRFin, my.width, my.height);
 			var pFar = matrix.unProject(pSFar, mRFin, my.width, my.height);
 
-			console.log(JSON.stringify(['nf', pNear, pFar]));
+			var ratio = pNear[1] / (pNear[1] - pFar[1]);
+
+			var pZero = [	
+				pNear[0] - ((pNear[0] - pFar[0]) * ratio),
+				pNear[1] - ((pNear[1] - pFar[1]) * ratio),
+				pNear[2] - ((pNear[2] - pFar[2]) * ratio)
+			];
+
+			console.log(JSON.stringify(['nf', pNear, pFar, pZero]));
 
 			my.stage.update();
 		},
