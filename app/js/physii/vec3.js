@@ -461,6 +461,16 @@ var physii = physii || {};
 		clone: function(v) 
 		{
 			return [v[0], v[1], v[2]];
+		},
+
+		getInterpolateRatio: function(v, axis, offset)
+		{
+
+		}
+
+		interpolate: function(v1, v2, ratio)
+		{
+
 		}
 	};
 

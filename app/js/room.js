@@ -189,6 +189,19 @@ var canmango = canmango || {};
 				displayObj.y = Math.round(newPosTop.y);
 				displayObj.scaleX = scaleX;
 				displayObj.scaleY = scaleY;
+
+				info.screenZ = newPos.z;
+
+				my.world.sort(function(a, b) {
+					return b.screenZ - a.screenZ;
+				});
+
+				for(var i = 0; i < my.world.length; i++)
+				{
+					var info = my.world[i];
+					my.container.addChildAt(info.displayObj, i);
+				}
+
 				my.stage.update();
 			 }
 		},
@@ -253,6 +266,7 @@ var canmango = canmango || {};
 				newPosTop = vec.fromArray(newPosTop);
 
 				zToObj.push({'z': newPos.z, 'obj': displayObj});
+				my.world[l].screenZ = newPos.z;
 
 				var scaleX = Math.abs(newPosRight.x - newPos.x) / info.w;
 				var scaleY = Math.abs(newPosTop.y - newPos.y) / info.h;
