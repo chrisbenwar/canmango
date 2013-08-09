@@ -77,6 +77,7 @@ var canmango = canmango || {};
 				guide.name = 'guide' + i;
 				my.container.addChild(guide);
 				my.world.push({
+					'id': guide.name,
 					'type': 'line',
 					'pos': vec.create(-(my.width / 2), 0, z),
 					'displayObj': guide, 
@@ -100,6 +101,11 @@ var canmango = canmango || {};
 			return s;
 		},
 
+		bindMoveEnd: function(callback, obj)
+		{
+			my.onMoveEnd = [callback, obj];			
+		},
+
 		/**
 		 * Create an image and add it to the stage with its
 		 * size getting small the higher it is, creating the
@@ -107,25 +113,24 @@ var canmango = canmango || {};
 		 *
 		 * @param id An identifier to refer to the image by.
 		 * @param Image The image to add.
-		 * @param options {x: dist across, y: dist up}
+		 * @param pos In format [x, y, z]
 		 */
-		addImage: function(id, image, options)
+		addImage: function(id, image, pos)
 		{
 			var width = image.width;
 			var height = image.height;
 			var bitmap = new createjs.Bitmap(image);
 			bitmap.name = id;
-			bitmap.x = options.x;
-			bitmap.y = options.y;
 			bitmap.onPress = my.pressHandler;
 
 			my.container.addChild(bitmap);
 
 			my.world.push({
+				'id': id,
 				'type': 'bitmap',
-				'pos': vec.create(options.x, 0, -options.y),
-				'posRight': vec.create(options.x + 50, 0, -options.y),
-				'posTop': vec.create(options.x, 50, -options.y),
+				'pos': vec.create(pos[0], pos[1], pos[2]),
+				'posRight': vec.create(pos[0] + 50, pos[1], pos[2]),
+				'posTop': vec.create(pos[0], 50, pos[2]),
 				'displayObj': bitmap,
 				'w': width,
 				'h': height
@@ -145,6 +150,20 @@ var canmango = canmango || {};
 		},
 
 		pressHandler: function(e){
+			e.onMouseUp = function(ev) {
+				var x = ev.stageX;
+				var y = ev.stageY;
+				var target = ev.target;
+				var objName = target.name;
+				var objIndex = my.getByName(objName);
+				var info = my.world[objIndex];
+
+				var callback = my.onMoveEnd[0];
+				var cbObj = my.onMoveEnd[1];
+
+				callback.call(cbObj, info);
+			};
+
 			e.onMouseMove = function(ev){
 				var x = ev.stageX;
 				var y = ev.stageY;

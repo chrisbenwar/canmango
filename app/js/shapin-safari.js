@@ -28,87 +28,6 @@ var canmango = canmango || {};
 			]
 		},
 
-		clear: function()
-		{
-			var designs = amplify.store();
-
-			for(var designID in designs)
-			{
-				amplify.store(designID, null);
-			}
-		},
-
-		save: function()
-		{
-			var $nameInput = $('#shapeName');
-			var name = $nameInput.val();
-			var design = my._editor.getDesign();
-			amplify.store(name, design);
-			this.loadSaved();
-		},
-
-		loadSaved: function()
-		{
-			var designs = amplify.store();
-			var imgDataURL = null, design = null;
-			var image = null;
-			
-			my._room.clear();
-
-			for(var canvasID in designs)
-			{
-				design = designs[canvasID];
-				my._imageLoader.loadDesign(design);
-				my._imageLoader.drawDesign();
-				tempCanvas.style.display = 'block';
-				var result = my._imageLoader.toDataURLClipped(); 
-				imgDataURL = result.dataURL; 
-				var width = result.w;
-				var height = result.h;
-				tempCanvas.style.display = 'none';
-				image = new Image();
-				image.src = imgDataURL;
-				image.width = width;
-				image.height = height;
-
-
-				var randX = Math.floor(Math.random() * my._room.width);
-				randX -= my._room.width / 2;
-				var randY = Math.floor(Math.random() * my._room.height);
-
-				my._room.addImage(canvasID, image, {x: randX, y: randY});
-			}
-			my._room.arrange();
-		},
-
-		updateHandles: function(shapeID, ignoreID)
-		{
-			var shapes = my._editor.getShapes();
-			var shape = shapes[shapeID];
-			shape.scale(my._canvas.width, my._canvas.height);
-			var numPoints = shape.numPoints();
-
-			for(var i = 0; i < numPoints; i++) 
-			{
-				var point = shape.getPoint(i);
-				var curve = shape.getCurve(i);
-
-				var handleID = shapeID + '-' + i;
-
-				if(handleID != ignoreID)
-				{
-					var curveHandleID = handleID + '-curve';
-
-					my._ui.moveHandle(handleID, point.x, point.y);
-
-					if(curve)
-					{
-						my._ui.moveHandle(curveHandleID, curve.x, curve.y);
-					}
-				}
-			}
-		},
-
 		init: function(design) 
 		{
 			my._design = design || my._defaultDesign;
@@ -125,6 +44,7 @@ var canmango = canmango || {};
 
 			my._room = cm.room;
 			my._room.init('designs');
+			my._room.bindMoveEnd(my.onMoveEnd, my);
 
 			var shapes = my._editor.getShapes();
 			var shape = shapes['rect'];
@@ -203,9 +123,104 @@ var canmango = canmango || {};
 
 			my.draw();
 
-			//my.clear();
 			my.loadSaved();
 		},
+
+		onMoveEnd: function(info)
+		{
+			var obj = amplify.store(info.id);
+			obj.pos = [info.pos.x, info.pos.y, info.pos.z];
+			amplify.store(info.id, obj);
+		},
+
+		clear: function()
+		{
+			var designs = amplify.store();
+
+			for(var designID in designs)
+			{
+				amplify.store(designID, null);
+			}
+		},
+
+		save: function()
+		{
+			var $nameInput = $('#shapeName');
+			var name = $nameInput.val();
+			var design = my._editor.getDesign();
+			var obj = {
+				'design': design,
+				'pos': [0, 0, 0]
+			};
+			amplify.store(name, obj);
+			this.loadSaved();
+		},
+
+		loadSaved: function()
+		{
+			var designs = amplify.store();
+			var imgDataURL = null, design = null;
+			var image = null;
+			var pos = null, obj = null;
+			
+			my._room.clear();
+
+			for(var canvasID in designs)
+			{
+				obj = designs[canvasID];
+				design = obj.design;
+				pos = obj.pos;
+
+				my._imageLoader.loadDesign(design);
+				my._imageLoader.drawDesign();
+				tempCanvas.style.display = 'block';
+				var result = my._imageLoader.toDataURLClipped(); 
+				imgDataURL = result.dataURL; 
+				var width = result.w;
+				var height = result.h;
+				tempCanvas.style.display = 'none';
+				image = new Image();
+				image.src = imgDataURL;
+				image.width = width;
+				image.height = height;
+
+				var randX = Math.floor(Math.random() * my._room.width);
+				randX -= my._room.width / 2;
+				var randY = Math.floor(Math.random() * my._room.height);
+
+				my._room.addImage(canvasID, image, [pos[0], 0, pos[2]]);
+			}
+			my._room.arrange();
+		},
+
+		updateHandles: function(shapeID, ignoreID)
+		{
+			var shapes = my._editor.getShapes();
+			var shape = shapes[shapeID];
+			shape.scale(my._canvas.width, my._canvas.height);
+			var numPoints = shape.numPoints();
+
+			for(var i = 0; i < numPoints; i++) 
+			{
+				var point = shape.getPoint(i);
+				var curve = shape.getCurve(i);
+
+				var handleID = shapeID + '-' + i;
+
+				if(handleID != ignoreID)
+				{
+					var curveHandleID = handleID + '-curve';
+
+					my._ui.moveHandle(handleID, point.x, point.y);
+
+					if(curve)
+					{
+						my._ui.moveHandle(curveHandleID, curve.x, curve.y);
+					}
+				}
+			}
+		},
+
 
 		draw: function() {
 			my._editor.drawDesign();
