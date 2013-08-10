@@ -206,7 +206,7 @@ var canmango = canmango || {};
 
 				displayObj.x = Math.round(newPosTop.x);
 				displayObj.y = Math.round(newPosTop.y);
-				displayObj.scaleX = scaleX;
+				displayObj.scaleX = scaleY;
 				displayObj.scaleY = scaleY;
 
 				info.screenZ = newPos.z;
@@ -292,11 +292,15 @@ var canmango = canmango || {};
 
 				displayObj.x = Math.round(newPosTop.x);
 				displayObj.y = Math.round(newPosTop.y);
-				displayObj.scaleX = scaleX;
 
 				if(type == 'bitmap')
 				{
+					displayObj.scaleX = scaleY;
 					displayObj.scaleY = scaleY;
+				}
+				else
+				{
+					displayObj.scaleX = scaleX;
 				}
 			};
 
