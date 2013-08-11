@@ -41,7 +41,7 @@ var imageGroupID = function(images, callback) {
 	}
 }
 
-var imageGroupSrc = function(imgSources, callback, listener) {
+var imageGroupSrc = function(imgSources, callback) {
 	var images = {};
 	var numLoaded = 0;
 	var numImages = imgSources.length

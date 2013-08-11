@@ -3,7 +3,6 @@ var canmango = canmango || {};
 
 (function(cm) {
 	var logger = futilitybelt.dev.logger;
-
 	cm.shapinSafari = {
 		_canvas: null,
 		_ui: null,
@@ -152,45 +151,79 @@ var canmango = canmango || {};
 				'design': design,
 				'pos': [0, 0, 0]
 			};
+
+			var imageGroup = [];
+			var result = my.designToImageURL(design);
+			my.imageSize[name] = {"w": result.w, "h": result.h};
+			imageGroup.push({ "id": name, "src": result.dataURL} );
+			imageGroupSrc(imageGroup, my.imageLoad);
+
 			amplify.store(name, obj);
-			this.loadSaved();
 		},
 
 		loadSaved: function()
 		{
 			var designs = amplify.store();
-			var imgDataURL = null, design = null;
+			var imgDataURL = null, design = null, id = null;
 			var image = null;
 			var pos = null, obj = null;
 			
 			my._room.clear();
 
-			for(var canvasID in designs)
+			var imageGroup = [];
+			my.imageSize = {};
+			for(var id in designs)
 			{
-				obj = designs[canvasID];
-				design = obj.design;
+				obj = designs[id];
 				pos = obj.pos;
 
-				my._imageLoader.loadDesign(design);
-				my._imageLoader.drawDesign();
-				tempCanvas.style.display = 'block';
-				var result = my._imageLoader.toDataURLClipped(); 
-				imgDataURL = result.dataURL; 
-				var width = result.w;
-				var height = result.h;
-				tempCanvas.style.display = 'none';
-				image = new Image();
-				image.src = imgDataURL;
-				image.width = width;
-				image.height = height;
+				var result = my.designToImageURL(obj.design);
 
-				var randX = Math.floor(Math.random() * my._room.width);
-				randX -= my._room.width / 2;
-				var randY = Math.floor(Math.random() * my._room.height);
+				imageGroup.push({ "id": id, "src": result.dataURL} );
+				my.imageSize[id] = {"w": result.w, "h": result.h};
+			}
 
-				my._room.addImage(canvasID, image, [pos[0], 0, pos[2]]);
+			imageGroupSrc(imageGroup, my.imageLoad);
+		},
+
+		imageLoad: function(images)
+		{
+			for(var id in images)
+			{
+				var image = images[id];
+				var obj = amplify.store(id);
+				var pos = obj.pos;
+				var w = my.imageSize[id].w;
+				var h = my.imageSize[id].h;
+				my._room.addImage(id, image, [pos[0], 0, pos[2]], w, h, true);
 			}
 			my._room.arrange();
+		},
+
+		designToImageURL: function(design)
+		{
+			my._imageLoader.loadDesign(design);
+			my._imageLoader.drawDesign();
+			tempCanvas.style.display = 'block';
+			var result = my._imageLoader.toDataURLClipped(); 
+			return result;
+		},
+
+		designToImage: function(design)
+		{
+			my._imageLoader.loadDesign(design);
+			my._imageLoader.drawDesign();
+			tempCanvas.style.display = 'block';
+			var result = my._imageLoader.toDataURLClipped(); 
+			var imgDataURL = result.dataURL; 
+			var width = result.w;
+			var height = result.h;
+			tempCanvas.style.display = 'none';
+			var image = new Image();
+			image.src = imgDataURL;
+			image.width = width;
+			image.height = height;
+			return image;
 		},
 
 		updateHandles: function(shapeID, ignoreID)

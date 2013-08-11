@@ -29,11 +29,10 @@ var canmango = canmango || {};
 		 */
 		init: function(canvasID, options)
 		{
-			my.stage = new createjs.Stage(canvasID);
+			var stage = my.stage = new createjs.Stage(canvasID);
 			my.container = new createjs.Container();
-			my.width = my.stage.canvas.width;
-			my.height = my.stage.canvas.height;
-
+			my.width = 800;//my.stage.canvas.width;
+			my.height = 800;//my.stage.canvas.height;
 
 			var interval = 100;
 			var speed = 2;
@@ -43,6 +42,8 @@ var canmango = canmango || {};
 			g.drawRect(0, 0, my.width, my.height);
 			my.dragger = new createjs.Shape(g);
 			my.stage.addChild(my.dragger);
+
+			my.setUpCamera();
 
 			my.dragger.addEventListener("mousedown", function(evt) {
 				//var offset = {x:evt.target.x-evt.stageX, y:evt.target.y-evt.stageY};
@@ -62,6 +63,23 @@ var canmango = canmango || {};
 
 			my.stage.addChild(my.container);
 			my.createGuides();
+
+			//setInterval(function() {stage.update();}, 500);
+		},
+
+		setUpCamera: function()
+		{
+			var vEye = vec.create(my._x, my._y, my._z);
+			var vTarget = vec.create(my._x, 0, my._z - 200);
+			var vUp = vec.create(0, 1, 0);
+			var mView = matrix.lookAt(vEye, vTarget, vUp)
+
+			var aspect = my.width / my.height;
+			var mP = matrix.perspective(90, 1, 1000);
+
+			var mFin = matrix.mul(mP, mView);
+
+			my.mFin = mFin;
 		},
 
 		createGuides: function(options)
@@ -115,17 +133,17 @@ var canmango = canmango || {};
 		 * @param Image The image to add.
 		 * @param pos In format [x, y, z]
 		 */
-		addImage: function(id, image, pos)
+		addImage: function(id, image, pos, width, height, noUpdate)
 		{
-			var width = image.width;
-			var height = image.height;
+			width = width || image.width;
+			height = height || image.height;
 			var bitmap = new createjs.Bitmap(image);
 			bitmap.name = id;
 			bitmap.onPress = my.pressHandler;
 
 			my.container.addChild(bitmap);
 
-			my.world.push({
+			var info = {
 				'id': id,
 				'type': 'bitmap',
 				'pos': vec.create(pos[0], pos[1], pos[2]),
@@ -134,7 +152,16 @@ var canmango = canmango || {};
 				'displayObj': bitmap,
 				'w': width,
 				'h': height
-			});
+			};
+
+			my.world.push(info);
+
+			my.addObject(info, true, true);
+
+			if(!noUpdate)
+			{
+				my.stage.update();
+			}
 		},
 
 		getByName: function(name)
@@ -187,9 +214,9 @@ var canmango = canmango || {};
 				];
 					
 				info.pos = vec.fromArray(pZero);
+
 				var pos = info.pos;
 
-				console.log(JSON.stringify(['pz', pZero]));
 				var posRight = vec.create(pos.x + info.w, 0, pos.z);
 				var posTop = vec.create(pos.x, info.h, pos.z);
 				var displayObj = info.displayObj;
@@ -225,6 +252,55 @@ var canmango = canmango || {};
 			 }
 		},
 
+		addObject: function(info, noUpdate, noSort)
+		{
+			var pos = info.pos;
+
+			var posRight = vec.create(pos.x + info.w, 0, pos.z);
+			var posTop = vec.create(pos.x, info.h, pos.z);
+			var displayObj = info.displayObj;
+
+			var newPos = matrix.project(vec.toArray(pos), my.mFin, my.width, my.height);
+			newPos = vec.fromArray(newPos);
+			var newPosRight = matrix.project(vec.toArray(posRight), my.mFin, my.width, my.height);
+			newPosRight = vec.fromArray(newPosRight);
+			var newPosTop = matrix.project(vec.toArray(posTop), my.mFin, my.width, my.height);
+			newPosTop = vec.fromArray(newPosTop);
+
+			var scaleX = Math.abs(newPosRight.x - newPos.x) / info.w;
+			var scaleY = Math.abs(newPosTop.y - newPos.y) / info.h;
+
+			displayObj.x = Math.round(newPosTop.x);
+			displayObj.y = Math.round(newPosTop.y);
+			displayObj.scaleX = scaleY;
+			displayObj.scaleY = scaleY;
+
+			info.screenZ = newPos.z;
+
+			if(!noSort)
+			{
+				my.sortObjects();
+			}
+
+			if(!noUpdate)
+			{
+				my.stage.update();
+			}
+		},
+
+		sortObjects: function()
+		{
+			my.world.sort(function(a, b) {
+				return b.screenZ - a.screenZ;
+			});
+
+			for(var i = 0; i < my.world.length; i++)
+			{
+				var info = my.world[i];
+				my.container.addChildAt(info.displayObj, i);
+			}
+		},
+
 		/**
 		 * Deletes all the images from the stage.
 		 */
@@ -232,7 +308,7 @@ var canmango = canmango || {};
 		{
 			// my.stage.clear();
 			my.world = [];
-			my.createGuides();
+			my.createGuides({"numGuides": 20});
 			my.container.removeAllChildren();
 		},
 
@@ -268,10 +344,6 @@ var canmango = canmango || {};
 				var type = info.type;
 
 				var pos = info.pos;
-
-				if (type != 'bitmap') {
-				  console.log(JSON.stringify([type, pos]));
-				}
 
 				var posRight = vec.create(pos.x + info.w, 0, pos.z);
 				var posTop = vec.create(pos.x, info.h, pos.z);
@@ -314,22 +386,6 @@ var canmango = canmango || {};
 
 				my.container.addChildAt(info.obj, i);
 			}
-
-			var pSNear = [200, 300, 0, 1];
-			var pSFar = [200, 300, 1, 1];
-
-			var pNear = matrix.unProject(pSNear, mRFin, my.width, my.height);
-			var pFar = matrix.unProject(pSFar, mRFin, my.width, my.height);
-
-			var ratio = pNear[1] / (pNear[1] - pFar[1]);
-
-			var pZero = [	
-				pNear[0] - ((pNear[0] - pFar[0]) * ratio),
-				pNear[1] - ((pNear[1] - pFar[1]) * ratio),
-				pNear[2] - ((pNear[2] - pFar[2]) * ratio)
-			];
-
-			console.log(JSON.stringify(['nf', pNear, pFar, pZero]));
 
 			my.stage.update();
 		},

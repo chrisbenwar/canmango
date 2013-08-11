@@ -100,7 +100,6 @@ var editor2d = function(canvas) {
 			_design = design;
 		
 			var textures = [];
-
 			
 			for(var i = 0; i < design.elems.length; i++) {
 				var elem = design.elems[i];
@@ -932,18 +931,55 @@ var editor2d = function(canvas) {
 			return bPattern;
 		},
 		
-		createCanvas: function(width, height) {
-			var cCanvas = document.createElement('canvas');
-			cCanvas.width = _width;
-			cCanvas.height = _height;
-			return cCanvas;
+		createCanvas: function(width, height, id) {
+			if(id && _canvasCache[id] && _canvasCache[id].canvas)
+			{
+				return _canvasCache[id].canvas;
+			}
+			else
+			{
+				var cCanvas = document.createElement('canvas');
+				cCanvas.width = _width;
+				cCanvas.height = _height;
+				if(id)
+				{
+					if(_canvasCache[id])
+					{
+						_canvasCache[id].canvas = cCanvas;
+					}
+					else
+					{
+						_canvasCache[id] = {"canvas": cCanvas};
+					}
+				}
+				return cCanvas;
+			}
 		},
 		
-		createCtx: function(canvas, width, height) {
-			var cCtx = canvas.getContext('2d');
-			cCtx.width = _width;
-			cCtx.height = _height;
-			return cCtx;
+		createCtx: function(canvas, width, height, id) {
+			if(id && _canvasCache[id] && _canvasCache[id].ctx)
+			{
+				_canvasCache[id].ctx.clearRect(0, 0, width, height);
+				return _canvasCache[id].ctx;
+			}
+			else
+			{
+				var cCtx = canvas.getContext('2d');
+				cCtx.width = _width;
+				cCtx.height = _height;
+				if(id)
+				{	
+					if(_canvasCache[id])
+					{
+						_canvasCache[id].ctx = cCtx;
+					}
+					else
+					{
+						_canvasCache[id] = {"ctx": cCtx};
+					}
+				}
+				return cCtx;
+			}
 		},
 		
 		screenPosToCanvasPos: function(x, y)
@@ -1496,16 +1532,19 @@ var editor2d = function(canvas) {
 		toDataURLClipped: function()
 		{
 			var canvasData = ctx.getImageData(0,0,_width,_height);
+			var data = canvasData.data;
 			var top = Infinity, bottom = 0;
 			var left = Infinity, right = 0;
+			var pixelIndex = 0, w = _width, h = _height;
+			var y = 0; x = 0;
 			
-			for(var y = 0; y < _height; y++)
+			for(y = 0; y < h; y++)
 			{
-				for(var x = 0; x < _width; x++)
+				for(x = 0; x < w; x++)
 				{					
-					var pix = this.getPixel(canvasData, x, y);
+					pixelIndex = (w * y + x) * 4;
 
-					if(pix.a != 0)
+					if(data[pixelIndex + 3] != 0)
 					{
 						if(y < top)
 						{
@@ -1530,10 +1569,10 @@ var editor2d = function(canvas) {
 
 			var newWidth = right - left;
 			var newHeight = bottom - top;
-			var outputCanvas = this.createCanvas(newWidth, newHeight);
-			var outputCtx = this.createCtx(outputCanvas, newWidth, newHeight);
-
-			futilitybelt.dev.logger.log([top, left, bottom, right], 'force');
+			var outputCanvas = this.createCanvas(newWidth, newHeight, 
+					'output' + newWidth + ':' + newHeight);
+			var outputCtx = this.createCtx(outputCanvas, newWidth, newHeight,
+					'output' + newWidth + ':' + newHeight);
 
 			outputCtx.drawImage(
 				_canvas, 
