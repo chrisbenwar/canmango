@@ -74,7 +74,12 @@ var canmango = canmango || {};
 
 			my.redraw();
 		},
-		draw: function(stage, w, h) {
+		draw: function(stage, width, height) {
+			var border = 50;
+			var w = width - border * 2;
+			var h = height - border * 2;
+			var xOff = border;
+			var yOff = border;
 			var parts = my.dude.parts;
 			var atoms = my.dude.atoms;
 			var order = my.dude.order;
@@ -135,8 +140,15 @@ var canmango = canmango || {};
 
 				if(my.containers[partID] && !part.atom)
 				{
-					my.containers[partID].x = x * w;
-					my.containers[partID].y = y * w;
+					var c = my.containers[partID];
+					c.x = x * w;
+					c.y = y * w;
+
+					if(partID == 'dude')
+					{
+						c.x += xOff;
+						c.y += yOff;
+					}
 				}
 
 				if(part.atom)
